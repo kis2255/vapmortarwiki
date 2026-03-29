@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { ArrowLeft, Eye, Edit3 } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import { MarkdownEditor } from "@/components/wiki/markdown-editor";
 
 export default function EditArticlePage() {
   const router = useRouter();
@@ -56,21 +57,23 @@ export default function EditArticlePage() {
       <Link href={`/wiki/${slug}`} className="mb-4 inline-flex items-center gap-1 text-sm text-[var(--color-muted)] hover:text-[var(--color-foreground)]">
         <ArrowLeft size={14} /> 문서로 돌아가기
       </Link>
-
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-xl font-bold tracking-tight">문서 편집</h1>
-        <button type="button" onClick={() => setPreview(!preview)} className="flex items-center gap-1.5 rounded-lg border border-[var(--color-border)] px-3 py-1.5 text-sm">
-          {preview ? <Edit3 size={14} /> : <Eye size={14} />}
-          {preview ? "편집" : "미리보기"}
-        </button>
-      </div>
+      <h1 className="mb-6 text-xl font-bold tracking-tight">문서 편집</h1>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="grid grid-cols-3 gap-4">
           <div className="col-span-2">
-            <input value={title} onChange={(e) => setTitle(e.target.value)} required className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-sidebar)] px-4 py-3 text-lg font-semibold outline-none focus:border-[var(--color-primary)]" />
+            <input
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              required
+              className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-sidebar)] px-4 py-3 text-lg font-semibold outline-none focus:border-[var(--color-primary)]"
+            />
           </div>
-          <select value={categorySlug} onChange={(e) => setCategorySlug(e.target.value)} className="rounded-lg border border-[var(--color-border)] bg-[var(--color-sidebar)] px-3 py-3 text-sm">
+          <select
+            value={categorySlug}
+            onChange={(e) => setCategorySlug(e.target.value)}
+            className="rounded-lg border border-[var(--color-border)] bg-[var(--color-sidebar)] px-3 py-3 text-sm"
+          >
             <option value="">카테고리 선택</option>
             <option value="repair-mortar">보수몰탈</option>
             <option value="waterproof-mortar">방수몰탈</option>
@@ -82,17 +85,27 @@ export default function EditArticlePage() {
           </select>
         </div>
 
-        <input value={tags} onChange={(e) => setTags(e.target.value)} placeholder="태그 (쉼표로 구분)" className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-sidebar)] px-4 py-2 text-sm outline-none focus:border-[var(--color-primary)]" />
+        <input
+          value={tags}
+          onChange={(e) => setTags(e.target.value)}
+          placeholder="태그 (쉼표로 구분)"
+          className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-sidebar)] px-4 py-2 text-sm outline-none focus:border-[var(--color-primary)]"
+        />
 
-        {preview ? (
-          <div className="min-h-[400px] rounded-xl border border-[var(--color-border)] p-6 whitespace-pre-wrap text-sm">{content}</div>
-        ) : (
-          <textarea value={content} onChange={(e) => setContent(e.target.value)} rows={20} className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-sidebar)] px-4 py-3 font-mono text-sm outline-none focus:border-[var(--color-primary)]" />
-        )}
+        <MarkdownEditor
+          value={content}
+          onChange={setContent}
+          preview={preview}
+          onTogglePreview={() => setPreview(!preview)}
+        />
 
         <div className="flex justify-end gap-3">
           <Link href={`/wiki/${slug}`} className="rounded-lg border border-[var(--color-border)] px-4 py-2 text-sm">취소</Link>
-          <button type="submit" disabled={saving} className="rounded-lg bg-[var(--color-primary)] px-6 py-2 text-sm text-white hover:bg-[var(--color-primary-hover)] disabled:opacity-50">
+          <button
+            type="submit"
+            disabled={saving}
+            className="rounded-lg bg-[var(--color-primary)] px-6 py-2 text-sm text-white hover:bg-[var(--color-primary-hover)] disabled:opacity-50"
+          >
             {saving ? "저장 중..." : "저장"}
           </button>
         </div>

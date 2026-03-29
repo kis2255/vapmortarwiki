@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db/prisma";
-import { FileText, Download } from "lucide-react";
+import Link from "next/link";
+import { FileText, Download, ArrowRight } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
@@ -47,6 +48,7 @@ export default async function DocumentsPage() {
               <th className="px-4 py-3 text-center text-[11px] font-semibold uppercase tracking-wider text-[var(--color-muted)]">임베딩</th>
               <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-[var(--color-muted)]">연결 제품</th>
               <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-[var(--color-muted)]">업로드일</th>
+              <th className="w-20"></th>
             </tr>
           </thead>
           <tbody>
@@ -65,7 +67,9 @@ export default async function DocumentsPage() {
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
                         <FileText size={14} className="shrink-0 text-red-500" />
-                        <span className="font-medium">{doc.fileName}</span>
+                        <Link href={`/documents/${doc.id}`} className="font-medium text-[var(--color-primary)] hover:underline">
+                          {doc.fileName}
+                        </Link>
                       </div>
                       {doc.extractedText && (
                         <p className="mt-0.5 pl-6 text-[11px] text-[var(--color-muted)] line-clamp-1">
@@ -89,6 +93,18 @@ export default async function DocumentsPage() {
                     </td>
                     <td className="px-4 py-3 text-[var(--color-muted)]">
                       {formatDate(doc.createdAt)}
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-1">
+                        {doc.filePath && (
+                          <a href={`/${doc.filePath}`} download title="다운로드" className="rounded-md p-1.5 text-[var(--color-muted)] hover:bg-[var(--color-sidebar)] hover:text-[var(--color-foreground)]">
+                            <Download size={14} />
+                          </a>
+                        )}
+                        <Link href={`/documents/${doc.id}`} title="상세 보기" className="rounded-md p-1.5 text-[var(--color-muted)] hover:bg-[var(--color-sidebar)] hover:text-[var(--color-primary)]">
+                          <ArrowRight size={14} />
+                        </Link>
+                      </div>
                     </td>
                   </tr>
                 );
