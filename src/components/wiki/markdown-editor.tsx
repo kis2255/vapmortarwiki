@@ -6,6 +6,7 @@ import {
   List, ListOrdered, Table, Link as LinkIcon, Minus, Eye, Edit3,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ArticleContent } from "@/components/wiki/article-content";
 
 interface MarkdownEditorProps {
   value: string;
@@ -105,7 +106,11 @@ export function MarkdownEditor({ value, onChange, preview, onTogglePreview }: Ma
       {/* 에디터/미리보기 */}
       {preview ? (
         <div className="min-h-[400px] p-5">
-          <div className="whitespace-pre-wrap text-sm leading-relaxed">{value || "내용을 입력하세요..."}</div>
+          {value ? (
+            <ArticleContent content={value} />
+          ) : (
+            <div className="text-sm text-[var(--color-muted)]">내용을 입력하세요...</div>
+          )}
         </div>
       ) : (
         <textarea
