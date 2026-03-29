@@ -47,6 +47,21 @@ async function vectorSearch(
     limit
   );
 
+  // 후처리: 출처 ID로 제목/slug 조회
+  const docIds = results.filter((r) => r.documentId).map((r) => r.documentId!);
+  const artIds = results.filter((r) => r.articleId).map((r) => r.articleId!);
+  const prodIds = results.filter((r) => r.productId).map((r) => r.productId!);
+
+  const [docs, arts, prods] = await Promise.all([
+    docIds.length > 0 ? prisma.document.findMany({ where: { id: { in: docIds } }, select: { id: true, fileName: true } }) : [],
+    artIds.length > 0 ? prisma.article.findMany({ where: { id: { in: artIds } }, select: { id: true, title: true, slug: true } }) : [],
+    prodIds.length > 0 ? prisma.product.findMany({ where: { id: { in: prodIds } }, select: { id: true, name: true, code: true } }) : [],
+  ]);
+
+  const docMap = new Map(docs.map((d) => [d.id, d.fileName]));
+  const artMap = new Map(arts.map((a) => [a.id, { title: a.title, slug: a.slug }]));
+  const prodMap = new Map(prods.map((p) => [p.id, `${p.name} (${p.code})`]));
+
   return results.map((r) => ({
     id: r.id,
     content: r.content,
@@ -54,7 +69,12 @@ async function vectorSearch(
     source: {
       type: r.documentId ? "document" : r.articleId ? "article" : "product",
       id: (r.documentId || r.articleId || r.productId)!,
-      title: "",
+      title: r.documentId
+        ? docMap.get(r.documentId) || ""
+        : r.articleId
+          ? artMap.get(r.articleId)?.title || ""
+          : prodMap.get(r.productId!) || "",
+      slug: r.articleId ? artMap.get(r.articleId)?.slug : undefined,
     },
     metadata: r.metadata,
   }));

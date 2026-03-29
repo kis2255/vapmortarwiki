@@ -115,6 +115,8 @@ export default function ChatPage() {
         url = `/api/products/${source.id}`;
       } else if (source.type === "article") {
         url = `/api/articles/${source.id}`;
+      } else if (source.type === "document") {
+        url = `/api/documents/${source.id}`;
       }
 
       if (url) {
@@ -128,7 +130,9 @@ export default function ChatPage() {
             slug: source.slug || data.slug,
             content: source.type === "product"
               ? formatProductDetail(data)
-              : data.content?.slice(0, 1500) || data.excerpt || "",
+              : source.type === "document"
+                ? formatDocumentDetail(data)
+                : data.content?.slice(0, 1500) || data.excerpt || "",
           });
         } else {
           setSelectedSource({
@@ -315,7 +319,9 @@ export default function ChatPage() {
                 href={
                   selectedSource.type === "product"
                     ? `/products/${selectedSource.id}`
-                    : `/wiki/${selectedSource.slug || selectedSource.id}`
+                    : selectedSource.type === "document"
+                      ? `/documents`
+                      : `/wiki/${selectedSource.slug || selectedSource.id}`
                 }
                 className="mt-1 inline-flex items-center gap-1 text-[11px] text-[var(--color-primary)] hover:underline"
               >
@@ -346,6 +352,26 @@ export default function ChatPage() {
       )}
     </div>
   );
+}
+
+function formatDocumentDetail(doc: {
+  fileName: string;
+  documentType: string;
+  pageCount?: number;
+  extractedText?: string;
+  product?: { name: string; code: string } | null;
+}): string {
+  const lines: string[] = [];
+  lines.push(`파일: ${doc.fileName}`);
+  lines.push(`분류: ${doc.documentType}`);
+  if (doc.pageCount) lines.push(`페이지: ${doc.pageCount}p`);
+  if (doc.product) lines.push(`연결 제품: ${doc.product.name} (${doc.product.code})`);
+  if (doc.extractedText) {
+    lines.push("\n── 추출된 텍스트 (미리보기) ──");
+    lines.push(doc.extractedText.slice(0, 1200));
+    if (doc.extractedText.length > 1200) lines.push("...");
+  }
+  return lines.join("\n");
 }
 
 function formatProductDetail(product: {
