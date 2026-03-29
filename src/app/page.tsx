@@ -28,7 +28,7 @@ export default async function HomePage() {
   const stats = [
     { label: "등록 제품", value: productCount, icon: Package, href: "/products", color: "text-blue-600", bg: "bg-blue-50" },
     { label: "위키 문서", value: articleCount, icon: FileText, href: "/wiki", color: "text-violet-600", bg: "bg-violet-50" },
-    { label: "업로드 PDF", value: documentCount, icon: Upload, href: "/upload", color: "text-amber-600", bg: "bg-amber-50" },
+    { label: "업로드 PDF", value: documentCount, icon: Upload, href: "/documents", color: "text-amber-600", bg: "bg-amber-50" },
   ];
 
   return (
