@@ -2,186 +2,263 @@
 
 ## 프로젝트 개요
 특수몰탈 마케팅 부서의 기술자료를 체계적으로 DB화하고, Wikipedia 형태의 내부 기술 위키로 제공하는 프로젝트.
-사용자가 자연어 질문을 통해 제품 물성, 시공방법, KS 규격 등에 대한 AI 기반 답변을 받을 수 있는 RAG 시스템 포함.
+사용자가 자연어 질문을 통해 제품 물성, 시공방법, KS 규격, 글로벌 경쟁사 분석 등에 대한 AI 기반 답변을 받을 수 있는 RAG 시스템 포함.
 
-## 기술 스택 (예정)
-- **Frontend**: Next.js + Tailwind CSS (위키 스타일 UI)
-- **Backend**: Next.js API Routes
-- **Database**: Supabase PostgreSQL + pgvector (HNSW 인덱스)
-- **ORM**: Prisma
-- **PDF 처리**: pdfjs-dist (뷰어 + 텍스트 추출), Tesseract.js (OCR)
-- **검색**: 전문검색 (Full-text) + 벡터 유사도 검색 (Hybrid)
-- **AI/RAG**:
-  - LLM: Google Gemini 2.0 Flash — 답변 생성, 의도 분류
-  - Embedding: Google Gemini text-embedding-004 (768차원)
-  - Framework: Vercel AI SDK (@ai-sdk/google)
-  - API 키: GOOGLE_GEMINI_API_KEY 1개로 LLM + Embedding 통합
-- **배포**: Vercel 또는 사내 서버
+## 배포 URL
+- **Production**: https://vapmortarwiki.vercel.app
+- **GitHub**: https://github.com/kis2255/vapmortarwiki
 
-## 디렉토리 구조 (계획)
+## 기술 스택
+| 구분 | 기술 |
+|------|------|
+| **Frontend** | Next.js 16 + Tailwind CSS 4 |
+| **Backend** | Next.js API Routes (19개 라우트) |
+| **Database** | Supabase PostgreSQL 17 + pgvector (HNSW 768차원) |
+| **ORM** | Prisma 6 |
+| **LLM** | Google Gemini 2.0 Flash (답변 생성 + 의도 분류) |
+| **Embedding** | Google Gemini embedding-001 (768차원, outputDimensionality) |
+| **AI Framework** | Vercel AI SDK (@ai-sdk/google) |
+| **PDF 처리** | pdf-parse v2 (텍스트 추출) + 키워드 자동분류 |
+| **Markdown** | react-markdown + remark-gfm (테이블/GFM 지원) |
+| **배포** | Vercel (Production) |
+| **API 키** | GOOGLE_GEMINI_API_KEY 1개로 LLM + Embedding 통합 |
+
+## 시스템 아키텍처
+```
+┌─────────────┐     ┌──────────────┐     ┌─────────────────┐
+│  사용자 브라우저  │────▶│  Vercel Edge   │────▶│  Supabase PG    │
+│  (Next.js)    │     │  (API Routes)  │     │  + pgvector     │
+└─────────────┘     └──────┬───────┘     └─────────────────┘
+                           │
+                    ┌──────▼───────┐
+                    │  Google Gemini │
+                    │  (LLM + Embed) │
+                    └──────────────┘
+```
+
+### RAG 파이프라인
+```
+[사용자 질문]
+    ↓
+[의도 분류] (Gemini Flash)
+    ├── LOOKUP → SQL 직접 조회 (물성 수치)
+    ├── COMPARE → SQL + RAG
+    ├── RECOMMEND → SQL 필터 + RAG
+    └── EXPLAIN/GENERAL → RAG 검색
+    ↓
+[하이브리드 검색]
+    ├── pgvector 코사인 유사도 (벡터 339건, HNSW 인덱스)
+    └── 키워드 매칭 (전문검색)
+    ↓
+[답변 생성] (Gemini Flash + 컨텍스트)
+    ↓
+[답변 + 출처 표시] → 출처 클릭 → 오른쪽 상세 패널
+```
+
+### PDF 업로드 파이프라인
+```
+[PDF 업로드] → [텍스트 추출 (pdf-parse v2)]
+    → [키워드 자동분류 (TDS/MSDS/시험성적서/...)]
+    → [청킹 (섹션+크기+테이블 분리)]
+    → [Gemini 임베딩 (768차원, 배치 100건)]
+    → [pgvector 저장 + HNSW 인덱스]
+    → AI 채팅에서 검색 가능
+```
+
+## 디렉토리 구조 (현행)
 ```
 vapmortarwiki/
-├── CLAUDE.md                          # 프로젝트 관리 문서 (이 파일)
-├── docs/                              # 시장조사, 기획 문서
-│   └── 특수몰탈_시장조사_종합보고서.md
+├── CLAUDE.md                              # 프로젝트 설계 문서 (이 파일)
+├── package.json                           # Next.js + 의존성
+├── vercel.json                            # Vercel 배포 설정
+├── prisma/
+│   ├── schema.prisma                      # DB 스키마 (PostgreSQL + pgvector)
+│   └── seed.ts                            # 초기 데이터 시드
+├── docs/                                  # 기획/조사 문서 (7개)
+│   ├── 특수몰탈_시장조사_종합보고서.md
+│   ├── AI_RAG_설계.md
+│   ├── UI_레퍼런스_분석.md
+│   ├── UI_레퍼런스_분석_보고서.md
+│   ├── 화면설계_와이어프레임.md
+│   ├── 마케팅팀_사용가이드.md
+│   └── Saint-Gobain_Fosroc_건설화학_종합분석.md
+├── downloads/                             # 다운로드된 참고 PDF (8개)
+├── references/
+│   └── pdf_download_list.md               # PDF 다운로드 가능 목록 (31건)
 ├── src/
-│   ├── app/                           # Next.js App Router
-│   │   ├── page.tsx                   # 메인 페이지
-│   │   ├── wiki/                      # 위키 문서 페이지
-│   │   ├── products/                  # 제품 DB 페이지
-│   │   ├── upload/                    # PDF 업로드 페이지
-│   │   ├── search/                    # 검색 페이지
-│   │   ├── chat/                      # AI 채팅 페이지
+│   ├── app/
+│   │   ├── layout.tsx                     # 3열 레이아웃
+│   │   ├── page.tsx                       # 대시보드 (벤토 그리드)
+│   │   ├── globals.css                    # 컬러 시스템 + 다크모드
+│   │   ├── chat/page.tsx                  # AI 채팅 (출처 상세 패널)
+│   │   ├── products/
+│   │   │   ├── page.tsx                   # 제품 목록 (카테고리 배지)
+│   │   │   ├── [id]/page.tsx              # 제품 상세 (물성 테이블 + Infobox)
+│   │   │   └── new/page.tsx               # 제품 등록 폼
+│   │   ├── wiki/
+│   │   │   ├── page.tsx                   # 위키 목록
+│   │   │   ├── [slug]/page.tsx            # 위키 상세 (react-markdown)
+│   │   │   ├── new/page.tsx               # 위키 작성 에디터
+│   │   │   └── standards/page.tsx         # KS 규격 목록
+│   │   ├── upload/page.tsx                # PDF 업로드
+│   │   ├── search/page.tsx                # 통합 검색
 │   │   └── api/
-│   │       ├── chat/                  # AI 채팅 API (RAG)
-│   │       ├── upload/                # PDF 업로드 API
-│   │       ├── embed/                 # 임베딩 생성 API
-│   │       └── search/                # 검색 API
-│   ├── components/                    # 공통 컴포넌트
-│   │   ├── layout/                    # 사이드바, 헤더, 네비게이션
-│   │   ├── wiki/                      # 위키 관련 컴포넌트
-│   │   ├── chat/                      # AI 채팅 컴포넌트
-│   │   └── upload/                    # 업로드 관련 컴포넌트
-│   ├── lib/                           # 유틸리티, DB 연결
-│   │   ├── rag/                       # RAG 파이프라인
-│   │   │   ├── chunker.ts             # 문서 청킹
-│   │   │   ├── embedder.ts            # 임베딩 생성
-│   │   │   ├── retriever.ts           # 하이브리드 검색
-│   │   │   └── generator.ts           # LLM 답변 생성
-│   │   └── pdf/                       # PDF 처리
-│   │       ├── extractor.ts           # 텍스트 추출
-│   │       ├── ocr.ts                 # OCR 처리
-│   │       └── classifier.ts          # 자동 분류
-│   └── types/                         # TypeScript 타입 정의
-├── prisma/                            # DB 스키마
-│   └── schema.prisma
-├── public/
-│   └── uploads/                       # 업로드된 PDF 저장
-└── data/                              # 초기 데이터, 시드
+│   │       ├── chat/route.ts              # RAG 답변 API
+│   │       ├── search/route.ts            # 통합 검색 API
+│   │       ├── products/route.ts          # 제품 CRUD
+│   │       ├── products/[id]/route.ts     # 제품 상세 API
+│   │       ├── articles/route.ts          # 위키 CRUD
+│   │       ├── articles/[id]/route.ts     # 위키 상세 API
+│   │       └── upload/route.ts            # PDF 업로드 + 분류 + 임베딩
+│   ├── components/
+│   │   ├── layout/sidebar.tsx             # 사이드바 (카테고리 컬러 도트)
+│   │   ├── layout/header.tsx              # 헤더 (블러 + Ctrl+K)
+│   │   ├── ui/category-badge.tsx          # 카테고리 배지 컴포넌트
+│   │   └── wiki/article-content.tsx       # Markdown 렌더링 (react-markdown)
+│   └── lib/
+│       ├── db/prisma.ts                   # Prisma 클라이언트
+│       ├── utils.ts                       # cn(), formatDate(), slugify()
+│       ├── rag/
+│       │   ├── chunker.ts                 # 문서 청킹 (섹션+크기+테이블)
+│       │   ├── embedder.ts                # Gemini 임베딩 (768차원, 배치100)
+│       │   ├── retriever.ts               # 하이브리드 검색 (pgvector + 키워드)
+│       │   └── generator.ts               # 의도분류 + 컨텍스트 + Gemini 답변
+│       └── pdf/
+│           ├── extractor.ts               # PDF 텍스트 추출 (pdf-parse v2)
+│           └── classifier.ts              # 자동 분류 (키워드 + 파일명)
 ```
 
-## 데이터 모델 (핵심 엔티티)
+## 데이터 모델 (Prisma 스키마)
 
-### Category (카테고리)
-- 대분류: 보수몰탈, 방수몰탈, 바닥몰탈, 주입재, 그라우트 등
-- 중분류/소분류 지원 (트리 구조)
+### 현행 DB 현황 (Supabase)
+| 테이블 | 건수 | 설명 |
+|--------|------|------|
+| categories | 5 | 보수/방수/바닥/주입/그라우트 |
+| products | 7 | VAP 제품 (물성 27건) |
+| standards | 13 | KS 7 + EN/ASTM/ACI/BS 6 |
+| articles | 16 | 위키 문서 |
+| documents | 8 | 업로드 PDF |
+| embeddings | 377 | 벡터 339건 (HNSW 인덱스) |
 
-### Product (제품)
-- 제품명, 제품코드, 카테고리
-- 용도, 특징, 적용범위
-- 물성 데이터 (압축강도, 부착강도, 휨강도 등)
-- 관련 규격 (KS F 4042 등)
+### 엔티티 관계
+```
+Category ──< Product ──< ProductProperty
+    │            │──< ProductStandard >── Standard
+    │            │──< Document ──< Embedding
+    │            └──< ArticleProduct
+    └──< Article ──< Embedding
+                └──< ArticleProduct
+ChatSession ──< ChatMessage
+```
 
-### Article (위키 문서)
-- 제목, 본문 (Markdown)
-- 카테고리, 태그
-- 연결된 제품
-- 버전 이력, 작성자
+## 페이지 맵 (19개 라우트)
+| 경로 | 타입 | 기능 |
+|------|------|------|
+| `/` | Dynamic | 대시보드 (통계 카드, AI 배너, 최근문서, 시장동향) |
+| `/products` | Dynamic | 제품 목록 (카테고리 배지, 필터, 검색) |
+| `/products/[id]` | Dynamic | 제품 상세 (물성 합격/불합격 테이블, Infobox, 시공방법) |
+| `/products/new` | Static | 제품 등록 폼 |
+| `/wiki` | Dynamic | 위키 목록 (태그, 카테고리) |
+| `/wiki/[slug]` | Dynamic | 위키 상세 (react-markdown, TOC, 태그) |
+| `/wiki/new` | Static | 위키 Markdown 에디터 + 미리보기 |
+| `/wiki/standards` | Dynamic | KS/EN/ASTM 규격 목록 (관련 제품 링크) |
+| `/chat` | Static | AI 채팅 (출처 클릭 → 오른쪽 상세 패널) |
+| `/upload` | Static | PDF 드래그앤드롭 업로드 + 자동분류 |
+| `/search` | Static | 통합 검색 (유형별 필터 탭) |
+| `/api/chat` | API | RAG 답변 (의도분류 → 검색 → Gemini 생성) |
+| `/api/search` | API | 통합 검색 (제품/문서/PDF/규격) |
+| `/api/products` | API | 제품 GET/POST |
+| `/api/products/[id]` | API | 제품 상세 GET |
+| `/api/articles` | API | 위키 GET/POST (+임베딩 자동생성) |
+| `/api/articles/[id]` | API | 위키 상세 GET (id 또는 slug) |
+| `/api/upload` | API | PDF 업로드 → 추출 → 분류 → 임베딩 |
 
-### Document (업로드 PDF)
-- 파일명, 파일경로, 파일크기
-- 문서유형: TDS / MSDS / 시험성적서 / 인증서 / 시공사례 / 카탈로그 / 기술논문 / 기타
-- 자동분류 결과 + 수동 확정 여부
-- 연결된 제품/문서
-- OCR 추출 텍스트 (검색용)
+## 업로드된 PDF 현황
+| # | 파일명 | 분류 | 페이지 | 임베딩 청크 | 출처 |
+|---|--------|------|--------|-----------|------|
+| 1 | Sika_EN1504_Concrete_Repair_Guide.pdf | GUIDE | 56p | 151 | Sika 글로벌 |
+| 2 | KR_Construction_Quality_Test_Standards.pdf | TEST_REPORT | 51p | 74 | 국토교통부 |
+| 3 | Fosroc_Renderoc_S_TDS.pdf | TDS | 4p | 23 | Fosroc/Resapol |
+| 4 | Sika_Concrete_Repair_Site_Handbook.pdf | GUIDE | 13p | 21 | Sika 글로벌 |
+| 5 | ARDEX_A38_TDS.pdf | TDS | 4p | 21 | ARDEX UK |
+| 6 | Fosroc_Conbextra_GP_TDS.pdf | TDS | 4p | 18 | Fosroc AU |
+| 7 | Weber_rep_R4_duo_TDS.pdf | TDS | 3p | 16 | Weber/Resapol |
+| 8 | SikaGrout-212_TDS.pdf | TDS | 4p | 15 | Sika USA |
 
-### Standard (규격/표준)
-- 규격번호 (KS F 4042 등)
-- 규격명, 설명
-- 연결된 제품
+### PDF 확인 방법
+1. **대시보드**: https://vapmortarwiki.vercel.app → "업로드 PDF" 카드에 건수 표시
+2. **업로드 페이지**: https://vapmortarwiki.vercel.app/upload → 업로드 이력 (추후 목록 구현)
+3. **AI 채팅**: https://vapmortarwiki.vercel.app/chat → PDF 내용 기반 질문 시 출처에 표시
+4. **Supabase DB**: https://supabase.com/dashboard/project/upzjbsrlaqdykykftuvv → Table Editor → documents/embeddings 테이블
 
-### Embedding (벡터 임베딩)
-- 원본 청크 텍스트, 임베딩 벡터 (1536차원)
-- 출처 (Document/Article/Product ID)
-- 메타데이터 (문서유형, 제품코드, 페이지번호)
+### PDF가 반영되는 방식
+```
+PDF 업로드 → 텍스트 추출 → 청킹(15~151건)
+    → Gemini 임베딩(768차원) → pgvector 저장
+    → AI 채팅 질문 시 벡터 유사도 검색으로 관련 청크 검색
+    → Gemini가 검색된 청크를 참고하여 답변 생성
+    → 답변 하단 "출처"에 PDF 파일명 표시
+```
 
-### ChatHistory (대화 이력)
-- 세션ID, 질문, 답변
-- 참조된 출처 목록
-- 사용자 피드백 (유용/비유용)
+## 위키 문서 현황 (16건)
 
-## PDF 자동 분류 키워드 규칙
-| 문서유형 | 판별 키워드 |
-|---------|------------|
-| TDS | 배합비, 시공방법, 양생, 물시멘트비, 혼화재, 적용범위 |
-| MSDS | CAS번호, 노출기준, 유해성, 응급조치, 안전보건자료 |
-| 시험성적서 | KS F, ASTM C, 압축강도, 시험결과, 시험일자 |
-| 인증서 | 인증번호, 유효기간, 적합판정, 인증기관 |
-| 시공사례 | 시공일자, 현장명, 적용면적, 준공 |
-| 카탈로그 | 제품라인업, 브랜드, 문의처 |
+### VAP 제품/기술
+| 문서 | 경로 |
+|------|------|
+| 폴리머 시멘트 모르타르 | `/wiki/polymer-cement-mortar` |
+| 콘크리트 구조물 보수보강 개요 | `/wiki/concrete-repair-overview` |
+| KS F 4042 규격 해설 | `/wiki/ks-f-4042-guide` |
 
-## 진행 상황
+### 시장 동향
+| 문서 | 경로 |
+|------|------|
+| 국내 보수보강 시장 동향 | `/wiki/domestic-market-trend` |
+| 글로벌 특수몰탈 시장 동향 | `/wiki/global-market-trend` |
 
-### Phase 1: 기획 및 조사 ✅
-- [x] 프로젝트 구조 설계
-- [x] 시장조사 (글로벌/국내 동향, KS 규격) → `docs/특수몰탈_시장조사_종합보고서.md`
-- [x] PDF 분류 체계 설계
-- [x] 데이터 모델 설계
+### 기술 심화
+| 문서 | 경로 |
+|------|------|
+| 콘크리트 탄산화(중성화) 메커니즘과 보수 | `/wiki/concrete-carbonation` |
+| 염화물 유발 철근 부식과 보수 | `/wiki/chloride-corrosion` |
+| 에폭시 vs 폴리우레탄 주입 비교 | `/wiki/epoxy-vs-polyurethane` |
+| 셀프레벨링 몰탈 기술 | `/wiki/self-leveling-mortar` |
+| 무수축 그라우트 - 철골 구조물 적용 | `/wiki/grout-steel-structure` |
+| EN 1504 유럽 보수 표준 해설 | `/wiki/en-1504-guide` |
+| 글로벌 주요 보수몰탈 제품 비교 | `/wiki/global-product-comparison` |
 
-### Phase 2: UI 레퍼런스 및 디자인 ✅
-- [x] Wikipedia/Docusaurus/GitBook/Notion/Confluence 레퍼런스 분석 → `docs/UI_레퍼런스_분석.md`
-- [x] 화면 구성안 (와이어프레임 7개 화면) → `docs/화면설계_와이어프레임.md`
-- [x] 주요 페이지 목록: 메인, 제품목록, 제품상세, 위키문서, 검색, PDF업로드, KS규격
-- [x] UI 설계 방향: Docusaurus(3열 레이아웃) + Wikipedia(Infobox) + GitBook(미니멀 디자인)
+### 경쟁사 분석
+| 문서 | 경로 |
+|------|------|
+| Saint-Gobain 건설화학 사업 분석 | `/wiki/saint-gobain-overview` |
+| Fosroc 보수몰탈 제품 라인업 | `/wiki/fosroc-product-lineup` |
+| Fosroc Conbextra 그라우트 분석 | `/wiki/fosroc-conbextra-grout` |
+| Weber 보수/방수/바닥 제품 분석 | `/wiki/weber-product-analysis` |
 
-### Phase 2.5: AI/RAG 설계 ✅
-- [x] RAG 아키텍처 설계 → `docs/AI_RAG_설계.md`
-- [x] 하이브리드 검색 전략 (Vector + Keyword + SQL)
-- [x] 질문 유형별 처리 전략 (6가지 유형)
-- [x] AI 채팅 UI 설계
-- [x] 데이터 동기화 및 안전장치 설계
+## 진행 완료 이력
 
-### Phase 3: 개발 ✅
-- [x] Next.js 프로젝트 초기화 (빌드 성공 확인)
-- [x] DB 스키마 구현 (Prisma + pgvector) → `prisma/schema.prisma`
-- [x] 레이아웃 (사이드바 + 헤더 + 반응형)
-- [x] 메인 대시보드 페이지
-- [x] 제품 목록 페이지 (DB 연동 + 필터/검색)
-- [x] 제품 상세 페이지 (물성 테이블 + Infobox + 관련문서 + 시공방법)
-- [x] 제품 등록 폼 (물성 데이터 동적 추가)
-- [x] 위키 문서 목록 (DB 연동)
-- [x] 위키 문서 상세 (Markdown 렌더링 + TOC + 태그)
-- [x] 위키 문서 작성 에디터 (Markdown + 미리보기)
-- [x] PDF 업로드 페이지 (드래그앤드롭 + 실제 API 연동)
-- [x] PDF 업로드 API (파일저장 + 텍스트추출 + 자동분류 + 임베딩생성)
-- [x] 통합 검색 페이지 (유형별 필터 탭)
-- [x] AI 채팅 페이지 (대화 UI + 빠른 질문 + 출처 표시)
-- [x] RAG 파이프라인 (chunker → embedder → retriever → generator)
-- [x] PDF 분류기 (키워드 규칙 + 파일명 기반)
-- [x] API 라우트 (/api/chat, /api/search, /api/products, /api/articles, /api/upload)
-- [x] Seed 데이터 (카테고리 5개, KS 규격 5개, 샘플 제품 1개, 위키문서 1개)
+| Phase | 상태 | 주요 내용 |
+|-------|------|----------|
+| 1. 기획/조사 | ✅ | 시장조사, PDF 분류 체계, 데이터 모델 |
+| 2. UI 설계 | ✅ | 5개 플랫폼 분석, 와이어프레임 7개 화면 |
+| 2.5. AI/RAG 설계 | ✅ | 하이브리드 검색, 의도 분류, 안전장치 |
+| 3. 개발 | ✅ | Next.js 19개 라우트, RAG 파이프라인 |
+| 4. 자료 입력 | ✅ | 제품 7, 규격 13, 위키 16, PDF 8 |
+| 5. 테스트/배포 | ✅ | Gemini E2E, Vercel 배포 |
+| 6. Supabase 전환 | ✅ | PostgreSQL + pgvector HNSW |
+| 7. UI 개선 | ✅ | 컬러 시스템, 배지, 물성 테이블, 채팅 버블 |
+| 8. 글로벌 자료 | ✅ | Saint-Gobain/Fosroc/Weber, EN1504, PDF 8건 |
 
-### Phase 4: 자료 입력 및 테스트 ✅
-- [x] SQLite 로컬 DB 설정 (PostgreSQL+pgvector 전환 준비 완료)
-- [x] DB 스키마 Push + Seed 실행 성공
-- [x] 초기 데이터: 카테고리 5개, KS 규격 7개, 제품 7개(물성 포함), 위키문서 5개
-- [x] 검색용 청크 자동 생성 (제품 + 위키문서)
-- [x] 전체 페이지 실데이터 렌더링 확인 (제품목록, 상세, 위키, 검색)
-- [x] 마케팅팀 사용 가이드 작성 → `docs/마케팅팀_사용가이드.md`
-
-### Phase 5: 통합 테스트 및 배포 준비 ✅
-- [x] Gemini API 연동 테스트 (LLM 답변 + 임베딩 생성 모두 성공)
-- [x] AI 채팅 E2E: RM-100 물성 조회, KS 규격 해설, 제품 비교 모두 정확
-- [x] PDF 업로드 E2E: 파일저장 + 자동분류(TDS) 성공
-- [x] 위키 문서 생성 시 Gemini embedding 자동 생성 (3072차원) 확인
-- [x] 대시보드 실시간 DB 통계 연동
-- [x] Vercel 배포 설정 (`vercel.json`)
-- [x] Git 초기화 + 초기 커밋
-
-### Supabase PostgreSQL 전환 ✅
-- [x] Supabase 프로젝트 생성 (ap-northeast-2, `upzjbsrlaqdykykftuvv`)
-- [x] pgvector 확장 활성화
-- [x] Prisma db push → 스키마 동기화
-- [x] Seed 데이터 입력 (카테고리 5, 규격 7, 제품 7, 위키 5, 검색 청크)
-- [x] HNSW 벡터 인덱스 생성 (768차원)
-- [x] Supabase + Gemini AI 전체 E2E 테스트 통과
-
-### 향후 작업
-- [ ] Vercel 배포 실행 (`vercel deploy`)
-- [ ] 마케팅팀 실데이터 입력 시작
+## 환경 변수
+```
+DATABASE_URL="postgres://...@aws-1-ap-northeast-2.pooler.supabase.com:6543/postgres?pgbouncer=true"
+DIRECT_URL="postgres://...@aws-1-ap-northeast-2.pooler.supabase.com:5432/postgres"
+GOOGLE_GENERATIVE_AI_API_KEY="AIza..."  # Vercel AI SDK용
+GOOGLE_GEMINI_API_KEY="AIza..."          # 임베딩 API용
+```
 
 ## 컨벤션
-- 코드: TypeScript, ESLint, Prettier
-- 커밋 메시지: 한글 허용, conventional commits 스타일
-- 문서: Markdown 형식
-- 변수명: camelCase (JS/TS), snake_case (DB)
+- 코드: TypeScript, ESLint
+- 커밋: 한글 허용, conventional commits
+- 문서: Markdown
+- 변수명: camelCase (JS/TS), Prisma 기본 (DB)
+- 카테고리 컬러: 보수(블루), 방수(시안), 바닥(퍼플), 주입(앰버), 그라우트(에메랄드)
