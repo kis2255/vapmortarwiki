@@ -80,7 +80,7 @@ export function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean; onClose
           <nav className="flex-1 overflow-y-auto px-3 py-3">
             <ul className="space-y-0.5">
               {navigation.map((item) => {
-                const isActive = pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href));
+                const isActive = pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href) && !navigation.some((other) => other.href !== item.href && other.href.startsWith(item.href) && pathname.startsWith(other.href)));
                 return (
                   <li key={item.name}>
                     <Link
