@@ -6,7 +6,7 @@ import { Table } from "@tiptap/extension-table";
 import { TableRow } from "@tiptap/extension-table-row";
 import { TableCell } from "@tiptap/extension-table-cell";
 import { TableHeader } from "@tiptap/extension-table-header";
-import { useEffect } from "react";
+import { useEffect, useState, useCallback } from "react";
 import {
   Bold, Italic, Heading1, Heading2, Heading3,
   List, ListOrdered, Table as TableIcon, Minus, Undo, Redo,
@@ -96,6 +96,13 @@ function htmlToMd(html: string): string {
 }
 
 export function MarkdownEditor({ value, onChange }: MarkdownEditorProps) {
+  const [inTable, setInTable] = useState(false);
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const checkTable = useCallback((e: any) => {
+    if (e) setInTable(e.isActive("table"));
+  }, []);
+
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -109,6 +116,10 @@ export function MarkdownEditor({ value, onChange }: MarkdownEditorProps) {
     content: mdToHtml(value),
     onUpdate: ({ editor }) => {
       onChange(htmlToMd(editor.getHTML()));
+      checkTable(editor);
+    },
+    onSelectionUpdate: ({ editor }) => {
+      checkTable(editor);
     },
     editorProps: {
       attributes: {
@@ -157,13 +168,12 @@ export function MarkdownEditor({ value, onChange }: MarkdownEditorProps) {
         {/* 테이블 */}
         <ToolBtn icon={TableIcon} label="테이블 삽입"
           onClick={() => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()} />
-        {editor.isActive("table") && (
-          <>
-            <ToolBtn icon={Plus} label="열 추가" onClick={() => editor.chain().focus().addColumnAfter().run()} />
-            <ToolBtn icon={Plus} label="행 추가" onClick={() => editor.chain().focus().addRowAfter().run()} />
-            <ToolBtn icon={Trash2} label="테이블 삭제" onClick={() => editor.chain().focus().deleteTable().run()} />
-          </>
-        )}
+        <ToolBtn icon={Plus} label="열 추가" active={inTable}
+          onClick={() => { if (inTable) editor.chain().focus().addColumnAfter().run(); }} />
+        <ToolBtn icon={Plus} label="행 추가" active={inTable}
+          onClick={() => { if (inTable) editor.chain().focus().addRowAfter().run(); }} />
+        <ToolBtn icon={Trash2} label="테이블 삭제" active={inTable}
+          onClick={() => { if (inTable) editor.chain().focus().deleteTable().run(); }} />
 
         <div className="ml-auto flex items-center gap-1">
           <ToolBtn icon={Undo} label="실행취소" onClick={() => editor.chain().focus().undo().run()} />
