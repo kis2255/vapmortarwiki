@@ -17,7 +17,7 @@ const navigation = [
   { name: "PDF 문서", href: "/documents", icon: Upload },
   { name: "AI 질의응답", href: "/chat", icon: MessageCircle },
   { name: "통합 검색", href: "/search", icon: Search },
-  { name: "KS 규격", href: "/wiki/standards", icon: BookOpen },
+  { name: "규격/표준", href: "/wiki/standards", icon: BookOpen },
 ];
 
 const categoryGroups = [
