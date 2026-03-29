@@ -30,14 +30,23 @@ const SYSTEM_PROMPT = `당신은 VAP 특수몰탈 기술 전문가입니다. 아
 async function classifyIntent(
   query: string
 ): Promise<"LOOKUP" | "EXPLAIN" | "COMPARE" | "RECOMMEND" | "GENERAL"> {
+  // 제품 코드가 포함되면 바로 LOOKUP
+  const hasProductCode = /[A-Z]{1,3}-?\d{2,4}/i.test(query);
+  const hasComparison = /비교|차이|vs|대비/.test(query);
+  if (hasProductCode && hasComparison) return "COMPARE";
+  if (hasProductCode) return "LOOKUP";
+
+  // 추천 키워드
+  if (/추천|적합|어떤.*제품|뭘.*써야/.test(query)) return "RECOMMEND";
+
   const { text } = await generateText({
     model: google("gemini-2.0-flash"),
-    prompt: `다음 질문의 의도를 분류하세요. 반드시 아래 중 하나만 답하세요:
-- LOOKUP: 정확한 수치/데이터 조회 (예: "RM-100 압축강도?")
-- COMPARE: 제품 비교 (예: "RM-100과 RM-200 차이?")
-- RECOMMEND: 제품 추천 (예: "방수에 적합한 제품?")
-- EXPLAIN: 설명/해설 (예: "폴리머 시멘트 모르타르란?")
-- GENERAL: 기타 일반 질문
+    prompt: `다음 건설/특수몰탈 관련 질문의 의도를 분류하세요. 반드시 아래 중 하나만 답하세요:
+- LOOKUP: 수치/데이터/제품 정보 조회 (강도, 규격, 배합비, 시공법 등)
+- COMPARE: 제품이나 규격 비교
+- RECOMMEND: 제품 추천
+- EXPLAIN: 개념/기술 해설
+- GENERAL: 기타
 
 질문: "${query}"
 의도:`,
@@ -106,7 +115,8 @@ export async function generateAnswer(
   // 2. 검색
   const [chunks, productData] = await Promise.all([
     hybridSearch(query, 8),
-    ["LOOKUP", "COMPARE", "RECOMMEND"].includes(intent)
+    // 모든 의도에서 제품 코드가 있으면 조회
+    /[A-Z]{1,3}-?\d{2,4}/i.test(query) || ["LOOKUP", "COMPARE", "RECOMMEND"].includes(intent)
       ? lookupProductData(query)
       : Promise.resolve([]),
   ]);

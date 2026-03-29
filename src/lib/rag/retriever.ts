@@ -119,11 +119,12 @@ async function keywordSearch(
 
 /** 제품 물성 데이터 직접 조회 */
 export async function lookupProductData(query: string) {
-  const codeMatch = query.match(/[A-Z]{1,3}-?\d{2,4}/i);
+  // 여러 제품 코드를 모두 추출 (RM-100, RM-200 등)
+  const codeMatches = [...query.matchAll(/[A-Z]{1,3}-?\d{2,4}\w*/gi)].map((m) => m[0]);
 
   const products = await prisma.product.findMany({
-    where: codeMatch
-      ? { code: { contains: codeMatch[0], mode: "insensitive" } }
+    where: codeMatches.length > 0
+      ? { OR: codeMatches.map((code) => ({ code: { contains: code, mode: "insensitive" as const } })) }
       : {
           OR: [
             { name: { contains: query, mode: "insensitive" } },
