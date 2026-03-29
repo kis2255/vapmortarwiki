@@ -25,11 +25,10 @@ const categoryGroups = [
     name: "제품",
     slug: "products",
     children: [
-      { name: "보수몰탈", slug: "repair-mortar", href: "/products?category=repair-mortar" },
-      { name: "방수몰탈", slug: "waterproof-mortar", href: "/products?category=waterproof-mortar" },
-      { name: "바닥몰탈", slug: "floor-mortar", href: "/products?category=floor-mortar" },
-      { name: "주입재", slug: "injection", href: "/products?category=injection" },
       { name: "그라우트", slug: "grout", href: "/products?category=grout" },
+      { name: "보수몰탈", slug: "repair-mortar", href: "/products?category=repair-mortar" },
+      { name: "바닥몰탈", slug: "floor-mortar", href: "/products?category=floor-mortar" },
+      { name: "타일용", slug: "tile", href: "/products?category=tile" },
     ],
   },
   {
