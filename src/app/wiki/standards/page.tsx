@@ -68,13 +68,19 @@ export default async function StandardsPage() {
               <span className="text-xs text-[var(--color-muted)]">{items.length}건</span>
             </div>
             <div className="overflow-hidden rounded-xl border border-[var(--color-border)]">
-              <table className="w-full text-sm">
+              <table className="w-full table-fixed text-sm">
+                <colgroup>
+                  <col className="w-[140px]" />
+                  <col />
+                  <col className="w-[160px]" />
+                  <col className="w-[40px]" />
+                </colgroup>
                 <thead className="bg-[var(--color-sidebar)]">
                   <tr>
                     <th className="px-4 py-2.5 text-left font-semibold">규격번호</th>
                     <th className="px-4 py-2.5 text-left font-semibold">규격명</th>
                     <th className="px-4 py-2.5 text-left font-semibold">관련 제품</th>
-                    <th className="w-10 px-2 py-2.5" />
+                    <th className="px-2 py-2.5" />
                   </tr>
                 </thead>
                 <tbody>
