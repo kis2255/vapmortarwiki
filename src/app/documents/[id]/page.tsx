@@ -30,14 +30,14 @@ export default async function DocumentDetailPage({
   });
   if (!doc) notFound();
 
-  const chunks = await prisma.embedding.findMany({
-    where: { documentId: id },
-    orderBy: { id: "asc" },
-    select: { id: true, content: true, vector: true },
-  });
+  // vector는 Unsupported 타입이므로 raw SQL로 존재 여부만 확인
+  const chunksRaw = await prisma.$queryRaw<
+    { id: string; content: string; has_vector: boolean }[]
+  >`SELECT id, content, (vector IS NOT NULL) as has_vector FROM embeddings WHERE "documentId" = ${id} ORDER BY id ASC`;
+  const chunks = chunksRaw;
 
   const t = typeLabels[doc.documentType] || typeLabels.OTHER;
-  const vectorCount = chunks.filter((c) => c.vector !== null).length;
+  const vectorCount = chunks.filter((c) => c.has_vector).length;
 
   return (
     <div className="mx-auto max-w-5xl">
@@ -119,7 +119,7 @@ export default async function DocumentDetailPage({
               <Hash size={12} className="shrink-0 text-[var(--color-muted)]" />
               <span className="font-mono text-[11px] text-[var(--color-muted)]">#{idx + 1}</span>
               <span className="flex-1 truncate">{chunk.content.slice(0, 120)}</span>
-              {chunk.vector ? (
+              {chunk.has_vector ? (
                 <span className="shrink-0 rounded-full bg-[var(--color-success-bg)] px-2 py-0.5 text-[10px] font-semibold text-[var(--color-success)]">벡터</span>
               ) : (
                 <span className="shrink-0 rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-semibold text-gray-500">텍스트만</span>
