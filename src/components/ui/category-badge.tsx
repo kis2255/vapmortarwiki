@@ -6,6 +6,8 @@ const categoryColors: Record<string, { bg: string; text: string; dot: string }> 
   "floor-mortar": { bg: "bg-violet-100", text: "text-violet-800", dot: "bg-violet-500" },
   injection: { bg: "bg-amber-100", text: "text-amber-800", dot: "bg-amber-500" },
   grout: { bg: "bg-emerald-100", text: "text-emerald-800", dot: "bg-emerald-500" },
+  "market-analysis": { bg: "bg-rose-100", text: "text-rose-800", dot: "bg-rose-500" },
+  "international-standards": { bg: "bg-indigo-100", text: "text-indigo-800", dot: "bg-indigo-500" },
 };
 
 export function CategoryBadge({

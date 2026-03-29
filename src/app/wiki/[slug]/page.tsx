@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/db/prisma";
-import { ArrowLeft, Tag, Calendar, User } from "lucide-react";
+import { ArrowLeft, Tag, Calendar, User, Edit3 } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 import { ArticleContent } from "@/components/wiki/article-content";
 
@@ -37,7 +37,15 @@ export default async function ArticlePage({
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-4">
         {/* 메인 본문 (3/4) */}
         <div className="lg:col-span-3">
-          <h1 className="mb-2 text-2xl font-bold">{article.title}</h1>
+          <div className="mb-2 flex items-center justify-between">
+            <h1 className="text-2xl font-bold">{article.title}</h1>
+            <Link
+              href={`/wiki/${article.slug}/edit`}
+              className="flex items-center gap-1.5 rounded-lg border border-[var(--color-border)] px-3 py-1.5 text-[13px] font-medium transition-colors hover:bg-[var(--color-sidebar)]"
+            >
+              <Edit3 size={14} /> 편집
+            </Link>
+          </div>
           <div className="mb-6 flex flex-wrap items-center gap-3 text-xs text-[var(--color-muted)]">
             {article.author && (
               <span className="flex items-center gap-1">
