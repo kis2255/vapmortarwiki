@@ -18,14 +18,15 @@ interface GeneratedAnswer {
 
 const SYSTEM_PROMPT = `당신은 VAP 특수몰탈 기술 전문가입니다. 아래 규칙을 반드시 따르세요:
 
-1. 제공된 자료(Context)를 기반으로만 답변하세요.
-2. 자료에 없는 내용은 "등록된 자료에서 확인되지 않습니다"라고 답변하세요.
-3. 물성 수치(압축강도, 휨강도 등)는 반드시 제공된 데이터를 정확히 인용하세요. 절대 추측하지 마세요.
+1. 제공된 Context 자료를 기반으로 답변하세요. Context에 관련 내용이 있으면 반드시 활용하세요.
+2. Context에 직접적인 내용이 없더라도, 건설/몰탈/콘크리트/방수/보수/그라우트/주입/규격 관련 질문이면 전문 지식으로 답변하세요.
+3. 물성 수치(압축강도, 휨강도 등)는 Context의 데이터를 정확히 인용하세요. 추측하지 마세요.
 4. 답변에 근거가 되는 출처를 [출처: 문서명] 형태로 표시하세요.
 5. KS 규격 기준값과 실측값을 비교할 때는 합격/불합격 여부를 명확히 표시하세요.
 6. 한국어로 답변하세요.
-7. 건설, 콘크리트, 몰탈, 방수, 보수보강, 그라우트 등 건설 분야 질문에는 반드시 답변하세요.
-8. 완전히 관련 없는 분야(요리, 여행 등)의 질문에만 "해당 분야는 답변 범위 밖입니다"라고 안내하세요.`;
+7. "해당 분야는 답변 범위 밖입니다"는 요리, 여행, 연예 등 건설과 완전히 무관한 질문에만 사용하세요.
+8. 제품 추천 질문에는 Context의 제품 데이터를 바탕으로 용도와 물성을 비교하며 추천하세요.
+9. 개념 설명 질문에는 Context 자료와 전문 지식을 결합하여 상세히 답변하세요.`;
 
 /** 질문 의도 분류 */
 async function classifyIntent(
@@ -73,6 +74,12 @@ function buildContext(
     for (const p of productData) {
       parts.push(`\n제품: ${p.name} (${p.code})`);
       parts.push(`카테고리: ${p.category.name}`);
+      if (p.description) parts.push(`설명: ${p.description}`);
+      if (p.usage) parts.push(`용도: ${p.usage}`);
+      if (p.scope) parts.push(`적용범위: ${p.scope}`);
+      if (p.mixRatio) parts.push(`배합비: ${p.mixRatio}`);
+      if (p.method) parts.push(`시공방법: ${p.method}`);
+      if (p.curing) parts.push(`양생: ${p.curing}`);
       if (p.properties.length > 0) {
         parts.push("물성 데이터:");
         for (const prop of p.properties) {
@@ -84,7 +91,7 @@ function buildContext(
         }
       }
       if (p.standards.length > 0) {
-        parts.push(`관련 규격: ${p.standards.map((s) => s.standard.code).join(", ")}`);
+        parts.push(`관련 규격: ${p.standards.map((s) => `${s.standard.code} (${s.standard.name})`).join(", ")}`);
       }
     }
   }
@@ -113,13 +120,10 @@ export async function generateAnswer(
   // 1. 의도 분류
   const intent = await classifyIntent(query);
 
-  // 2. 검색
+  // 2. 검색 (항상 제품 데이터도 함께 조회)
   const [chunks, productData] = await Promise.all([
     hybridSearch(query, 8),
-    // 모든 의도에서 제품 코드가 있으면 조회
-    /[A-Z]{1,3}-?\d{2,4}/i.test(query) || ["LOOKUP", "COMPARE", "RECOMMEND"].includes(intent)
-      ? lookupProductData(query)
-      : Promise.resolve([]),
+    lookupProductData(query).catch(() => []),
   ]);
 
   // 3. 컨텍스트 조합

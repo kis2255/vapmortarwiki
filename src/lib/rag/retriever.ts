@@ -80,21 +80,31 @@ async function vectorSearch(
   }));
 }
 
-/** 키워드 기반 전문검색 (raw SQL LIKE - 한국어 지원) */
+/** 한국어 질문에서 검색 키워드 추출 */
+function extractKeywords(query: string): string[] {
+  // 어미/조사를 단어 경계에서만 제거 (단어 중간의 글자는 보존)
+  const cleaned = query
+    .replace(/[?？!~.,;:'"()（）\[\]{}]/g, " ")
+    .replace(/(은|는|이|가|을|를|에서|에게|으로|로서|에는|이란|란|이요|해줘|해주세요|알려줘|알려주세요|뭐야|인가요|인가|입니까|인지|할까|할까요|하세요|해봐|좀|요|과|와|의|로|도)$/g, " ")
+    .replace(/\s(은|는|이|가|을|를|에서|에게|으로|로서|에는|과|와|의)\s/g, " ");
+  const keywords = cleaned.split(/\s+/).filter((k) => k.length >= 2);
+  return keywords.length > 0 ? keywords : [query.trim()];
+}
+
+/** 키워드 기반 전문검색 (ILIKE 다중 키워드 OR - 한국어 지원) */
 async function keywordSearch(
   query: string,
   limit: number = 10
 ): Promise<RetrievedChunk[]> {
-  // 한국어 조사 제거 + 키워드 추출
-  const cleaned = query.replace(/[은는이가을를에서의로도만와과]/g, " ");
-  const keywords = cleaned.split(/\s+/).filter((k) => k.length >= 2);
-  if (keywords.length === 0) keywords.push(query);
+  const keywords = extractKeywords(query);
 
-  // 가장 긴 키워드로 검색 (핵심어일 가능성 높음)
-  keywords.sort((a, b) => b.length - a.length);
-  const mainKeyword = `%${keywords[0]}%`;
+  // 모든 키워드를 ILIKE OR로 검색 (더 넓은 매칭)
+  const conditions = keywords
+    .slice(0, 5) // 최대 5개 키워드
+    .map((k) => `content ILIKE '%${k.replace(/'/g, "''")}%'`)
+    .join(" OR ");
 
-  const results = await prisma.$queryRaw<
+  const results = await prisma.$queryRawUnsafe<
     {
       id: string;
       content: string;
@@ -102,14 +112,22 @@ async function keywordSearch(
       articleId: string | null;
       productId: string | null;
     }[]
-  >`SELECT id, content, "documentId", "articleId", "productId"
-    FROM embeddings WHERE content LIKE ${mainKeyword} LIMIT ${limit * 2}`;
+  >(
+    `SELECT id, content, "documentId", "articleId", "productId"
+     FROM embeddings WHERE ${conditions}
+     ORDER BY LENGTH(content) ASC
+     LIMIT ${limit * 3}`
+  );
 
-  // 나머지 키워드로 후처리 필터 (optional boost)
-  const filtered = keywords.length > 1
-    ? results.filter((r) => keywords.some((k) => r.content.includes(k)))
-    : results;
-  const sliced = filtered.slice(0, limit);
+  // 매칭 키워드 수 기반 점수 계산 + 정렬
+  const scored = results.map((r) => {
+    const matchCount = keywords.filter((k) =>
+      r.content.toLowerCase().includes(k.toLowerCase())
+    ).length;
+    return { ...r, matchCount };
+  });
+  scored.sort((a, b) => b.matchCount - a.matchCount);
+  const sliced = scored.slice(0, limit);
 
   // 출처 정보 후처리
   const docIds = sliced.filter((r) => r.documentId).map((r) => r.documentId!);
@@ -129,7 +147,7 @@ async function keywordSearch(
   return sliced.map((r) => ({
     id: r.id,
     content: r.content,
-    score: 0.5,
+    score: 0.3 + (r.matchCount / keywords.length) * 0.7, // 매칭 비율 기반 점수
     source: {
       type: r.documentId ? "document" : r.articleId ? "article" : "product",
       id: (r.documentId || r.articleId || r.productId)!,
@@ -147,27 +165,29 @@ export async function lookupProductData(query: string) {
   // 여러 제품 코드를 모두 추출 (RM-100, RM-200 등)
   const codeMatches = [...query.matchAll(/[A-Z]{1,3}-?\d{2,4}\w*/gi)].map((m) => m[0]);
 
-  const products = await prisma.product.findMany({
-    where: codeMatches.length > 0
-      ? { OR: codeMatches.map((code) => ({ code: { contains: code, mode: "insensitive" as const } })) }
-      : {
-          OR: [
-            { name: { contains: query, mode: "insensitive" } },
-            { code: { contains: query, mode: "insensitive" } },
-            { usage: { contains: query, mode: "insensitive" } },
-            { description: { contains: query, mode: "insensitive" } },
-            { category: { name: { contains: query, mode: "insensitive" } } },
-          ],
-        },
-    include: {
-      properties: true,
-      category: true,
-      standards: { include: { standard: true } },
-    },
+  if (codeMatches.length > 0) {
+    return prisma.product.findMany({
+      where: { OR: codeMatches.map((code) => ({ code: { contains: code, mode: "insensitive" as const } })) },
+      include: { properties: true, category: true, standards: { include: { standard: true } } },
+      take: 5,
+    });
+  }
+
+  // 키워드 분리 후 각각 검색 (전체 쿼리 대신 개별 키워드)
+  const keywords = extractKeywords(query);
+  const conditions = keywords.flatMap((kw) => [
+    { name: { contains: kw, mode: "insensitive" as const } },
+    { code: { contains: kw, mode: "insensitive" as const } },
+    { usage: { contains: kw, mode: "insensitive" as const } },
+    { description: { contains: kw, mode: "insensitive" as const } },
+    { category: { name: { contains: kw, mode: "insensitive" as const } } },
+  ]);
+
+  return prisma.product.findMany({
+    where: { OR: conditions },
+    include: { properties: true, category: true, standards: { include: { standard: true } } },
     take: 5,
   });
-
-  return products;
 }
 
 /** 하이브리드 검색: Vector + Keyword 결합 */
