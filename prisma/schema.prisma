@@ -119,11 +119,26 @@ model Article {
 
   products   ArticleProduct[]
   embeddings Embedding[]
+  versions   ArticleVersion[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@map("articles")
+}
+
+model ArticleVersion {
+  id        String  @id @default(cuid())
+  articleId String
+  article   Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  version   Int
+  title     String
+  content   String  @db.Text
+  author    String?
+
+  createdAt DateTime @default(now())
+
+  @@map("article_versions")
 }
 
 model ArticleProduct {
@@ -142,6 +157,7 @@ model Document {
   id             String  @id @default(cuid())
   fileName       String
   filePath       String
+  storageUrl     String?
   fileSize       Int
   mimeType       String  @default("application/pdf")
   documentType   String  @default("OTHER")

@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/db/prisma";
-import { ArrowLeft, Tag, Calendar, User, Edit3 } from "lucide-react";
+import { ArrowLeft, Tag, Calendar, User, Edit3, History } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 import { ArticleContent } from "@/components/wiki/article-content";
 
@@ -19,6 +19,17 @@ export default async function ArticlePage({
       products: { include: { product: true } },
     },
   });
+
+  // 버전 이력 조회 (raw SQL - article_versions 테이블)
+  let versions: { version: number; author: string | null; createdAt: Date }[] = [];
+  if (article) {
+    try {
+      versions = await prisma.$queryRaw`
+        SELECT version, author, "createdAt" FROM article_versions
+        WHERE "articleId" = ${article.id} ORDER BY version DESC LIMIT 10
+      `;
+    } catch { /* 테이블 없으면 무시 */ }
+  }
 
   if (!article) notFound();
 
@@ -119,6 +130,31 @@ export default async function ArticlePage({
               </nav>
             </div>
           )}
+
+          {/* 버전 이력 */}
+          {versions.length > 0 && (
+            <div className="rounded-xl border border-[var(--color-border)] p-4">
+              <h3 className="mb-2 flex items-center gap-1 text-xs font-semibold text-[var(--color-muted)]">
+                <History size={12} /> 편집 이력
+              </h3>
+              <div className="space-y-1.5">
+                {versions.map((v) => (
+                  <div key={v.version} className="text-[11px] text-[var(--color-muted)]">
+                    <span className="font-medium">v{v.version}</span>
+                    <span className="mx-1">·</span>
+                    <span>{v.author || "시스템"}</span>
+                    <span className="mx-1">·</span>
+                    <span>{formatDate(v.createdAt)}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* 현재 버전 */}
+          <div className="rounded-xl border border-[var(--color-border)] p-4 text-[11px] text-[var(--color-muted)]">
+            현재 버전: v{article.version}
+          </div>
         </div>
       </div>
     </div>

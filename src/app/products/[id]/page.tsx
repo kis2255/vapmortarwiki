@@ -18,6 +18,7 @@ export default async function ProductDetailPage({
       properties: { orderBy: { name: "asc" } },
       standards: { include: { standard: true } },
       documents: { orderBy: { createdAt: "desc" } },
+      articles: { include: { article: { select: { id: true, title: true, slug: true } } } },
     },
   });
 
@@ -108,7 +109,28 @@ export default async function ProductDetailPage({
             </div>
           )}
 
-          {/* 관련 문서 */}
+          {/* 관련 위키 문서 */}
+          {product.articles.length > 0 && (
+            <div className="rounded-xl border border-[var(--color-border)]">
+              <div className="border-b border-[var(--color-border)] bg-[var(--color-sidebar)] px-4 py-3">
+                <h2 className="text-sm font-semibold">관련 위키 문서</h2>
+              </div>
+              <div className="divide-y divide-[var(--color-border)]">
+                {product.articles.map((ap) => (
+                  <Link
+                    key={ap.article.id}
+                    href={`/wiki/${ap.article.slug}`}
+                    className="flex items-center gap-2 px-4 py-3 text-sm transition-colors hover:bg-[var(--color-surface-hover)]"
+                  >
+                    <FileText size={14} className="text-[var(--color-primary)]" />
+                    {ap.article.title}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* 관련 PDF 문서 */}
           {product.documents.length > 0 && (
             <div className="rounded-xl border border-[var(--color-border)]">
               <div className="border-b border-[var(--color-border)] bg-[var(--color-sidebar)] px-4 py-3">

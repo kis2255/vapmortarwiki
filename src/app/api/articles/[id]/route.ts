@@ -43,6 +43,18 @@ export async function PUT(
     }
   }
 
+  // 현재 버전을 이력으로 저장
+  await prisma.$executeRawUnsafe(
+    `INSERT INTO article_versions (id, "articleId", version, title, content, author, "createdAt")
+     VALUES ($1, $2, $3, $4, $5, $6, NOW())`,
+    `ver-${article.id}-v${article.version}`,
+    article.id,
+    article.version,
+    article.title,
+    article.content,
+    article.author || "시스템"
+  );
+
   const updated = await prisma.article.update({
     where: { id: article.id },
     data: {
@@ -57,3 +69,4 @@ export async function PUT(
 
   return NextResponse.json(updated);
 }
+
