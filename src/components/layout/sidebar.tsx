@@ -20,19 +20,34 @@ const navigation = [
   { name: "KS 규격", href: "/wiki/standards", icon: BookOpen },
 ];
 
-const categories = [
-  { name: "보수몰탈", slug: "repair-mortar", href: "/products?category=repair-mortar" },
-  { name: "방수몰탈", slug: "waterproof-mortar", href: "/products?category=waterproof-mortar" },
-  { name: "바닥몰탈", slug: "floor-mortar", href: "/products?category=floor-mortar" },
-  { name: "주입재", slug: "injection", href: "/products?category=injection" },
-  { name: "그라우트", slug: "grout", href: "/products?category=grout" },
-  { name: "시장/경쟁사", slug: "market-analysis", href: "/wiki?category=market-analysis" },
-  { name: "국제규격", slug: "international-standards", href: "/wiki?category=international-standards" },
+const categoryGroups = [
+  {
+    name: "제품",
+    slug: "products",
+    children: [
+      { name: "보수몰탈", slug: "repair-mortar", href: "/products?category=repair-mortar" },
+      { name: "방수몰탈", slug: "waterproof-mortar", href: "/products?category=waterproof-mortar" },
+      { name: "바닥몰탈", slug: "floor-mortar", href: "/products?category=floor-mortar" },
+      { name: "주입재", slug: "injection", href: "/products?category=injection" },
+      { name: "그라우트", slug: "grout", href: "/products?category=grout" },
+    ],
+  },
+  {
+    name: "시장/경쟁사",
+    slug: "market-analysis",
+    href: "/wiki?category=market-analysis",
+  },
+  {
+    name: "국제규격",
+    slug: "international-standards",
+    href: "/wiki?category=international-standards",
+  },
 ];
 
 export function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean; onClose?: () => void }) {
   const pathname = usePathname();
   const [categoryOpen, setCategoryOpen] = useState(true);
+  const [productOpen, setProductOpen] = useState(true);
 
   return (
     <>
@@ -96,18 +111,47 @@ export function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean; onClose
               </button>
               {categoryOpen && (
                 <ul className="mt-1 space-y-0.5">
-                  {categories.map((cat) => (
-                    <li key={cat.slug}>
-                      <Link
-                        href={cat.href}
-                        onClick={onClose}
-                        className="flex items-center gap-2.5 rounded-lg px-5 py-1.5 text-[13px] text-[var(--color-foreground)] transition-colors hover:bg-[var(--color-surface)]"
-                      >
-                        <CategoryDot slug={cat.slug} />
-                        {cat.name}
-                      </Link>
-                    </li>
-                  ))}
+                  {categoryGroups.map((group) =>
+                    "children" in group && group.children ? (
+                      <li key={group.slug}>
+                        <button
+                          onClick={() => setProductOpen(!productOpen)}
+                          className="flex w-full items-center gap-2.5 rounded-lg px-5 py-1.5 text-[13px] font-medium text-[var(--color-foreground)] transition-colors hover:bg-[var(--color-surface)]"
+                        >
+                          {productOpen ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+                          <CategoryDot slug="repair-mortar" />
+                          {group.name}
+                        </button>
+                        {productOpen && (
+                          <ul className="mt-0.5 space-y-0.5">
+                            {group.children.map((cat) => (
+                              <li key={cat.slug}>
+                                <Link
+                                  href={cat.href}
+                                  onClick={onClose}
+                                  className="flex items-center gap-2.5 rounded-lg py-1.5 pl-10 pr-3 text-[13px] text-[var(--color-foreground)] transition-colors hover:bg-[var(--color-surface)]"
+                                >
+                                  <CategoryDot slug={cat.slug} />
+                                  {cat.name}
+                                </Link>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </li>
+                    ) : (
+                      <li key={group.slug}>
+                        <Link
+                          href={group.href!}
+                          onClick={onClose}
+                          className="flex items-center gap-2.5 rounded-lg px-5 py-1.5 text-[13px] text-[var(--color-foreground)] transition-colors hover:bg-[var(--color-surface)]"
+                        >
+                          <CategoryDot slug={group.slug} />
+                          {group.name}
+                        </Link>
+                      </li>
+                    )
+                  )}
                 </ul>
               )}
             </div>
