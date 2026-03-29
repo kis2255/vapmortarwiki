@@ -2,6 +2,19 @@ import Link from "next/link";
 import { prisma } from "@/lib/db/prisma";
 import { ExternalLink, ChevronRight } from "lucide-react";
 
+/** 마크다운 기호를 제거하고 첫 의미 있는 문장 추출 */
+function stripMarkdown(text: string): string {
+  return text
+    .replace(/^##?\s+.*/gm, "")       // 헤더 제거
+    .replace(/\|[^\n]+\|/g, "")        // 테이블 행 제거
+    .replace(/[-|:]+\s*/g, "")         // 테이블 구분선 제거
+    .replace(/\*\*/g, "")              // 볼드 제거
+    .replace(/^[-*]\s+/gm, "")         // 리스트 마커 제거
+    .replace(/\n+/g, " ")             // 줄바꿈 → 공백
+    .replace(/\s{2,}/g, " ")          // 다중 공백 정리
+    .trim();
+}
+
 export const dynamic = "force-dynamic";
 
 const categoryLabels: Record<string, { label: string; color: string }> = {
@@ -83,7 +96,7 @@ export default async function StandardsPage() {
                           <div>{std.name}</div>
                           {std.description && (
                             <div className="mt-0.5 line-clamp-1 text-xs text-[var(--color-muted)]">
-                              {std.description}
+                              {stripMarkdown(std.description)}
                             </div>
                           )}
                         </Link>
