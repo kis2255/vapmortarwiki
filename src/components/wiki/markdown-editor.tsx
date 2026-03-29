@@ -10,7 +10,7 @@ import { useEffect, useState, useCallback } from "react";
 import {
   Bold, Italic, Heading1, Heading2, Heading3,
   List, ListOrdered, Table as TableIcon, Minus, Undo, Redo,
-  Plus, Trash2, Code,
+  Plus, Trash2, Code, Columns, Rows,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -168,12 +168,22 @@ export function MarkdownEditor({ value, onChange }: MarkdownEditorProps) {
         {/* 테이블 */}
         <ToolBtn icon={TableIcon} label="테이블 삽입"
           onClick={() => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()} />
-        <ToolBtn icon={Plus} label="열 추가" active={inTable}
-          onClick={() => { if (inTable) editor.chain().focus().addColumnAfter().run(); }} />
-        <ToolBtn icon={Plus} label="행 추가" active={inTable}
-          onClick={() => { if (inTable) editor.chain().focus().addRowAfter().run(); }} />
-        <ToolBtn icon={Trash2} label="테이블 삭제" active={inTable}
-          onClick={() => { if (inTable) editor.chain().focus().deleteTable().run(); }} />
+        {inTable && (
+          <>
+            <Divider />
+            <ToolBtnText icon={Columns} label="열 추가" text="열+"
+              onClick={() => editor.chain().focus().addColumnAfter().run()} />
+            <ToolBtnText icon={Columns} label="열 삭제" text="열−" danger
+              onClick={() => editor.chain().focus().deleteColumn().run()} />
+            <ToolBtnText icon={Rows} label="행 추가" text="행+"
+              onClick={() => editor.chain().focus().addRowAfter().run()} />
+            <ToolBtnText icon={Rows} label="행 삭제" text="행−" danger
+              onClick={() => editor.chain().focus().deleteRow().run()} />
+            <Divider />
+            <ToolBtn icon={Trash2} label="테이블 삭제"
+              onClick={() => editor.chain().focus().deleteTable().run()} />
+          </>
+        )}
 
         <div className="ml-auto flex items-center gap-1">
           <ToolBtn icon={Undo} label="실행취소" onClick={() => editor.chain().focus().undo().run()} />
@@ -235,6 +245,31 @@ function ToolBtn({ icon: Icon, label, active, onClick }: {
       )}
     >
       <Icon size={15} />
+    </button>
+  );
+}
+
+function ToolBtnText({ icon: Icon, label, text, danger, onClick }: {
+  icon: React.ComponentType<{ size: number }>;
+  label: string;
+  text: string;
+  danger?: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      title={label}
+      onClick={onClick}
+      className={cn(
+        "flex items-center gap-0.5 rounded-md px-1.5 py-1 text-[11px] font-medium transition-colors",
+        danger
+          ? "text-[var(--color-danger)] hover:bg-[var(--color-danger-bg)]"
+          : "text-[var(--color-muted)] hover:bg-[var(--color-surface)] hover:text-[var(--color-foreground)]"
+      )}
+    >
+      <Icon size={13} />
+      {text}
     </button>
   );
 }
