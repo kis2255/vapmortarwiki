@@ -52,12 +52,12 @@ export default async function ProductDetailPage({
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b border-[var(--color-border)] bg-[var(--color-sidebar)]/50">
-                      <th className="px-4 py-2 text-left font-medium">시험항목</th>
-                      <th className="px-4 py-2 text-left font-medium">규격기준</th>
-                      <th className="px-4 py-2 text-left font-medium">시험결과</th>
-                      <th className="px-4 py-2 text-left font-medium">시험방법</th>
-                      <th className="px-4 py-2 text-center font-medium">판정</th>
+                    <tr className="border-b-2 border-[var(--color-border)] bg-[var(--color-sidebar)]">
+                      <th className="px-4 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wider text-[var(--color-muted)]">시험항목</th>
+                      <th className="px-4 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wider text-[var(--color-muted)]">규격기준</th>
+                      <th className="px-4 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wider text-[var(--color-muted)]">시험결과</th>
+                      <th className="px-4 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wider text-[var(--color-muted)]">시험방법</th>
+                      <th className="px-4 py-2.5 text-center text-[11px] font-semibold uppercase tracking-wider text-[var(--color-muted)]">판정</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -66,24 +66,25 @@ export default async function ProductDetailPage({
                         key={prop.id}
                         className="border-b border-[var(--color-border)] last:border-0"
                       >
-                        <td className="px-4 py-2.5 font-medium">{prop.name}</td>
-                        <td className="px-4 py-2.5 text-[var(--color-muted)]">
+                        <td className="px-4 py-3 text-[13px] font-medium">{prop.name}</td>
+                        <td className="px-4 py-3 font-mono text-[13px] text-[var(--color-muted)]">
                           {prop.standard || "-"}
                         </td>
-                        <td className="px-4 py-2.5 font-semibold">
-                          {prop.value} {prop.unit}
+                        <td className="px-4 py-3">
+                          <span className="font-mono text-[14px] font-bold">{prop.value}</span>
+                          <span className="ml-1 text-[11px] text-[var(--color-muted)]">{prop.unit}</span>
                         </td>
-                        <td className="px-4 py-2.5 text-[var(--color-muted)]">
+                        <td className="px-4 py-3 font-mono text-[12px] text-[var(--color-muted)]">
                           {prop.testMethod || "-"}
                         </td>
-                        <td className="px-4 py-2.5 text-center">
+                        <td className="px-4 py-3 text-center">
                           {prop.passed ? (
-                            <span className="inline-flex items-center gap-1 text-[var(--color-success)]">
-                              <CheckCircle size={14} /> 합격
+                            <span className="inline-flex items-center gap-1 rounded-full bg-[var(--color-success-bg)] px-2.5 py-0.5 text-[11px] font-semibold text-[var(--color-success)]">
+                              <CheckCircle size={12} /> 합격
                             </span>
                           ) : (
-                            <span className="inline-flex items-center gap-1 text-[var(--color-danger)]">
-                              <XCircle size={14} /> 불합격
+                            <span className="inline-flex items-center gap-1 rounded-full bg-[var(--color-danger-bg)] px-2.5 py-0.5 text-[11px] font-semibold text-[var(--color-danger)]">
+                              <XCircle size={12} /> 불합격
                             </span>
                           )}
                         </td>
@@ -139,7 +140,7 @@ export default async function ProductDetailPage({
         {/* Infobox 사이드바 (1/3) */}
         <div className="space-y-4">
           <div className="rounded-xl border border-[var(--color-border)]">
-            <div className="border-b border-[var(--color-border)] bg-[var(--color-primary)] px-4 py-3">
+            <div className="bg-gradient-to-r from-[#1e40af] to-[#3b82f6] px-4 py-3">
               <h2 className="text-sm font-semibold text-white">제품 정보</h2>
             </div>
             <div className="space-y-3 p-4 text-sm">

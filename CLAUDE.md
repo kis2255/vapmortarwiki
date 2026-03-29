@@ -7,7 +7,7 @@
 ## 기술 스택 (예정)
 - **Frontend**: Next.js + Tailwind CSS (위키 스타일 UI)
 - **Backend**: Next.js API Routes
-- **Database**: PostgreSQL + pgvector (벡터 검색 확장)
+- **Database**: Supabase PostgreSQL + pgvector (HNSW 인덱스)
 - **ORM**: Prisma
 - **PDF 처리**: pdfjs-dist (뷰어 + 텍스트 추출), Tesseract.js (OCR)
 - **검색**: 전문검색 (Full-text) + 벡터 유사도 검색 (Hybrid)
@@ -168,9 +168,16 @@ vapmortarwiki/
 - [x] Vercel 배포 설정 (`vercel.json`)
 - [x] Git 초기화 + 초기 커밋
 
+### Supabase PostgreSQL 전환 ✅
+- [x] Supabase 프로젝트 생성 (ap-northeast-2, `upzjbsrlaqdykykftuvv`)
+- [x] pgvector 확장 활성화
+- [x] Prisma db push → 스키마 동기화
+- [x] Seed 데이터 입력 (카테고리 5, 규격 7, 제품 7, 위키 5, 검색 청크)
+- [x] HNSW 벡터 인덱스 생성 (768차원)
+- [x] Supabase + Gemini AI 전체 E2E 테스트 통과
+
 ### 향후 작업
 - [ ] Vercel 배포 실행 (`vercel deploy`)
-- [ ] PostgreSQL + pgvector 전환 (대규모 데이터 시 성능 향상)
 - [ ] 마케팅팀 실데이터 입력 시작
 
 ## 컨벤션

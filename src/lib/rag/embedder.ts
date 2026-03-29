@@ -4,7 +4,7 @@
  */
 
 const EMBEDDING_MODEL = "gemini-embedding-001";
-const EMBEDDING_DIMENSION = 3072;
+const EMBEDDING_DIMENSION = 768;
 
 export { EMBEDDING_DIMENSION };
 
@@ -18,8 +18,8 @@ export async function generateEmbedding(text: string): Promise<number[]> {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        model: `models/${EMBEDDING_MODEL}`,
         content: { parts: [{ text }] },
+        outputDimensionality: EMBEDDING_DIMENSION,
       }),
     }
   );
@@ -48,6 +48,7 @@ export async function generateEmbeddings(
         requests: texts.map((text) => ({
           model: `models/${EMBEDDING_MODEL}`,
           content: { parts: [{ text }] },
+          outputDimensionality: EMBEDDING_DIMENSION,
         })),
       }),
     }

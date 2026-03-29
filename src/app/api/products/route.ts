@@ -10,8 +10,8 @@ export async function GET(req: NextRequest) {
       ...(categorySlug && { category: { slug: categorySlug } }),
       ...(search && {
         OR: [
-          { name: { contains: search, mode: "default" as const } },
-          { code: { contains: search, mode: "default" as const } },
+          { name: { contains: search, mode: "insensitive" as const } },
+          { code: { contains: search, mode: "insensitive" as const } },
         ],
       }),
     },

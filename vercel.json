@@ -1,10 +1,5 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "nextjs",
-  "buildCommand": "npx prisma generate && next build",
-  "env": {
-    "DATABASE_URL": "@database-url",
-    "GOOGLE_GENERATIVE_AI_API_KEY": "@google-gemini-api-key",
-    "GOOGLE_GEMINI_API_KEY": "@google-gemini-api-key"
-  }
+  "buildCommand": "npx prisma generate && next build"
 }

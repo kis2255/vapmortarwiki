@@ -78,15 +78,16 @@ export async function POST(req: NextRequest) {
           const vectors = await generateEmbeddings(chunks.map((c) => c.content));
 
           for (let i = 0; i < chunks.length; i++) {
-            await prisma.embedding.create({
-              data: {
-                id: `emb-${document.id}-${i}`,
-                content: chunks[i].content,
-                vector: JSON.stringify(vectors[i]),
-                metadata: JSON.stringify(chunks[i].metadata),
-                documentId: document.id,
-              },
-            });
+            const vectorStr = `[${vectors[i].join(",")}]`;
+            await prisma.$executeRawUnsafe(
+              `INSERT INTO embeddings (id, content, vector, metadata, document_id, created_at)
+               VALUES ($1, $2, $3::vector, $4::jsonb, $5, NOW())`,
+              `emb-${document.id}-${i}`,
+              chunks[i].content,
+              vectorStr,
+              JSON.stringify(chunks[i].metadata),
+              document.id
+            );
           }
           embeddingCount = chunks.length;
         }

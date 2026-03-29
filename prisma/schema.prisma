@@ -1,10 +1,13 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  directUrl  = env("DIRECT_URL")
+  extensions = [vector]
 }
 
 // ─── 카테고리 (트리 구조) ───
@@ -35,11 +38,11 @@ model Product {
   name        String
   categoryId  String
   category    Category @relation(fields: [categoryId], references: [id])
-  description String?
+  description String?  @db.Text
   usage       String?
-  scope       String?
+  scope       String?  @db.Text
   mixRatio    String?
-  method      String?
+  method      String?  @db.Text
   curing      String?
   packaging   String?
 
@@ -78,7 +81,7 @@ model Standard {
   id          String  @id @default(cuid())
   code        String  @unique
   name        String
-  description String?
+  description String? @db.Text
   category    String?
 
   products ProductStandard[]
@@ -105,11 +108,11 @@ model Article {
   id         String  @id @default(cuid())
   title      String
   slug       String  @unique
-  content    String
+  content    String  @db.Text
   excerpt    String?
   categoryId String?
   category   Category? @relation(fields: [categoryId], references: [id])
-  tags       String    @default("") // JSON 배열 문자열 (SQLite에 배열 없음)
+  tags       String[]
   published  Boolean   @default(false)
   version    Int       @default(1)
   author     String?
@@ -141,10 +144,10 @@ model Document {
   filePath       String
   fileSize       Int
   mimeType       String  @default("application/pdf")
-  documentType   String  @default("OTHER") // TDS, MSDS, TEST_REPORT, CERTIFICATE, CASE_STUDY, CATALOG, TECHNICAL_PAPER, OTHER
+  documentType   String  @default("OTHER")
   autoClassified Boolean @default(false)
   confirmed      Boolean @default(false)
-  extractedText  String?
+  extractedText  String? @db.Text
   pageCount      Int?
   productId      String?
   product        Product? @relation(fields: [productId], references: [id])
@@ -160,10 +163,10 @@ model Document {
 // ─── 벡터 임베딩 (RAG) ───
 
 model Embedding {
-  id         String  @id @default(cuid())
-  content    String  // 원본 청크 텍스트
-  vector     String? // JSON 배열로 벡터 저장 (SQLite), PostgreSQL에서는 pgvector 사용
-  metadata   String? // JSON 문자열
+  id         String                          @id @default(cuid())
+  content    String                          @db.Text
+  vector     Unsupported("vector(768)")?
+  metadata   Json?
 
   documentId String?
   document   Document? @relation(fields: [documentId], references: [id], onDelete: Cascade)
@@ -195,8 +198,8 @@ model ChatMessage {
   sessionId String
   session   ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
   role      String
-  content   String
-  sources   String?     // JSON 문자열
+  content   String      @db.Text
+  sources   Json?
   feedback  Int?
 
   createdAt DateTime @default(now())

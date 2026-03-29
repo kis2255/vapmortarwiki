@@ -3,6 +3,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/db/prisma";
 import { ArrowLeft, Tag, Calendar, User } from "lucide-react";
 import { formatDate } from "@/lib/utils";
+import { ArticleContent } from "@/components/wiki/article-content";
 
 export default async function ArticlePage({
   params,
@@ -21,12 +22,7 @@ export default async function ArticlePage({
 
   if (!article) notFound();
 
-  const parsedTags: string[] = article.tags ? JSON.parse(article.tags) : [];
-
-  // 간단한 Markdown → HTML (제목, 볼드, 리스트, 테이블)
-  const htmlContent = renderMarkdown(article.content);
-
-  // 목차 생성
+  const parsedTags: string[] = article.tags || [];
   const headings = extractHeadings(article.content);
 
   return (
@@ -58,10 +54,7 @@ export default async function ArticlePage({
             )}
           </div>
 
-          <div
-            className="prose prose-sm max-w-none"
-            dangerouslySetInnerHTML={{ __html: htmlContent }}
-          />
+          <ArticleContent content={article.content} />
 
           {/* 태그 */}
           {parsedTags.length > 0 && (
@@ -97,7 +90,7 @@ export default async function ArticlePage({
           )}
         </div>
 
-        {/* 우측 사이드바: TOC + 요약 (1/4) */}
+        {/* 우측 사이드바: TOC (1/4) */}
         <div className="hidden space-y-4 lg:block">
           {headings.length > 0 && (
             <div className="sticky top-4 rounded-xl border border-[var(--color-border)] p-4">
@@ -139,30 +132,4 @@ function extractHeadings(markdown: string) {
     }
   }
   return headings;
-}
-
-function renderMarkdown(markdown: string): string {
-  let html = markdown
-    // headings
-    .replace(/^### (.+)$/gm, '<h3 id="$1" class="text-base font-semibold mt-6 mb-2">$1</h3>')
-    .replace(/^## (.+)$/gm, '<h2 id="$1" class="text-lg font-semibold mt-8 mb-3 border-b border-[var(--color-border)] pb-1">$1</h2>')
-    .replace(/^# (.+)$/gm, '<h1 id="$1" class="text-xl font-bold mt-8 mb-4">$1</h1>')
-    // bold
-    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
-    // lists
-    .replace(/^- (.+)$/gm, '<li class="ml-4 list-disc text-sm leading-relaxed">$1</li>')
-    // paragraphs
-    .replace(/\n\n/g, "</p><p class='mt-2 text-sm leading-relaxed'>")
-    // line breaks
-    .replace(/\n/g, "<br/>");
-
-  // wrap in paragraph
-  html = `<p class='text-sm leading-relaxed'>${html}</p>`;
-
-  // clean up heading IDs
-  html = html.replace(/id="([^"]+)"/g, (_, id) =>
-    `id="${id.toLowerCase().replace(/[^a-z0-9가-힣]/g, "-")}"`
-  );
-
-  return html;
 }

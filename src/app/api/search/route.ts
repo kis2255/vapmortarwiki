@@ -22,9 +22,9 @@ export async function GET(req: NextRequest) {
     const products = await prisma.product.findMany({
       where: {
         OR: [
-          { name: { contains: query, mode: "default" } },
-          { code: { contains: query, mode: "default" } },
-          { description: { contains: query, mode: "default" } },
+          { name: { contains: query, mode: "insensitive" } },
+          { code: { contains: query, mode: "insensitive" } },
+          { description: { contains: query, mode: "insensitive" } },
         ],
       },
       include: { category: true },
@@ -47,9 +47,9 @@ export async function GET(req: NextRequest) {
     const articles = await prisma.article.findMany({
       where: {
         OR: [
-          { title: { contains: query, mode: "default" } },
-          { content: { contains: query, mode: "default" } },
-          { tags: { contains: query } },
+          { title: { contains: query, mode: "insensitive" } },
+          { content: { contains: query, mode: "insensitive" } },
+          { tags: { hasSome: [query] } },
         ],
         published: true,
       },
@@ -71,8 +71,8 @@ export async function GET(req: NextRequest) {
     const documents = await prisma.document.findMany({
       where: {
         OR: [
-          { fileName: { contains: query, mode: "default" } },
-          { extractedText: { contains: query, mode: "default" } },
+          { fileName: { contains: query, mode: "insensitive" } },
+          { extractedText: { contains: query, mode: "insensitive" } },
         ],
       },
       take: 10,
@@ -94,8 +94,8 @@ export async function GET(req: NextRequest) {
     const standards = await prisma.standard.findMany({
       where: {
         OR: [
-          { code: { contains: query, mode: "default" } },
-          { name: { contains: query, mode: "default" } },
+          { code: { contains: query, mode: "insensitive" } },
+          { name: { contains: query, mode: "insensitive" } },
         ],
       },
       take: 10,

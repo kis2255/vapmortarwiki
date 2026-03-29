@@ -438,11 +438,11 @@ async function main() {
 
     const article = await prisma.article.upsert({
       where: { slug: a.slug },
-      update: { content: a.content, tags: JSON.stringify(a.tags) },
+      update: { content: a.content, tags: a.tags },
       create: {
         title: a.title, slug: a.slug, content: a.content,
         excerpt: a.content.slice(0, 200),
-        categoryId: catId, tags: JSON.stringify(a.tags),
+        categoryId: catId, tags: a.tags,
         published: true, author: "시스템",
       },
     });

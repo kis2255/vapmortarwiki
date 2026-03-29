@@ -6,15 +6,11 @@ import { formatDate } from "@/lib/utils";
 export const dynamic = "force-dynamic";
 
 export default async function WikiPage() {
-  const rawArticles = await prisma.article.findMany({
+  const articles = await prisma.article.findMany({
     where: { published: true },
     include: { category: true },
     orderBy: { updatedAt: "desc" },
   });
-  const articles = rawArticles.map((a) => ({
-    ...a,
-    parsedTags: (a.tags ? JSON.parse(a.tags) : []) as string[],
-  }));
 
   return (
     <div className="mx-auto max-w-5xl">
@@ -67,10 +63,10 @@ export default async function WikiPage() {
                   <Calendar size={10} />
                   {formatDate(article.updatedAt)}
                 </span>
-                {article.parsedTags.length > 0 && (
+                {article.tags.length > 0 && (
                   <span className="flex items-center gap-1 text-xs text-[var(--color-muted)]">
                     <Tag size={10} />
-                    {article.parsedTags.slice(0, 3).join(", ")}
+                    {article.tags.slice(0, 3).join(", ")}
                   </span>
                 )}
               </div>
