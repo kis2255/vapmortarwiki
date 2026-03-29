@@ -13,6 +13,7 @@ export interface RetrievedChunk {
     type: "document" | "article" | "product";
     id: string;
     title: string;
+    slug?: string;
   };
   metadata: Record<string, unknown> | null;
 }
@@ -31,12 +32,12 @@ async function vectorSearch(
       content: string;
       score: number;
       metadata: Record<string, unknown> | null;
-      document_id: string | null;
-      article_id: string | null;
-      product_id: string | null;
+      documentId: string | null;
+      articleId: string | null;
+      productId: string | null;
     }[]
   >(
-    `SELECT id, content, metadata, document_id, article_id, product_id,
+    `SELECT id, content, metadata, "documentId", "articleId", "productId",
             1 - (vector <=> $1::vector) as score
      FROM embeddings
      WHERE vector IS NOT NULL
@@ -51,8 +52,8 @@ async function vectorSearch(
     content: r.content,
     score: Number(r.score),
     source: {
-      type: r.document_id ? "document" : r.article_id ? "article" : "product",
-      id: (r.document_id || r.article_id || r.product_id)!,
+      type: r.documentId ? "document" : r.articleId ? "article" : "product",
+      id: (r.documentId || r.articleId || r.productId)!,
       title: "",
     },
     metadata: r.metadata,
@@ -74,7 +75,7 @@ async function keywordSearch(
     take: limit,
     include: {
       document: { select: { id: true, fileName: true } },
-      article: { select: { id: true, title: true } },
+      article: { select: { id: true, title: true, slug: true } },
       product: { select: { id: true, name: true, code: true } },
     },
   });
@@ -90,6 +91,7 @@ async function keywordSearch(
         r.document?.fileName ||
         r.article?.title ||
         (r.product ? `${r.product.name} (${r.product.code})` : ""),
+      slug: r.article?.slug,
     },
     metadata: r.metadata as Record<string, unknown> | null,
   }));

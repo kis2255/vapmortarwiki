@@ -8,6 +8,7 @@ interface Source {
   type: string;
   title: string;
   id?: string;
+  slug?: string;
 }
 
 interface Message {
@@ -21,6 +22,7 @@ interface SourceDetail {
   type: string;
   id: string;
   title: string;
+  slug?: string;
   content?: string;
 }
 
@@ -123,6 +125,7 @@ export default function ChatPage() {
             type: source.type,
             id: source.id,
             title: source.title,
+            slug: source.slug || data.slug,
             content: source.type === "product"
               ? formatProductDetail(data)
               : data.content?.slice(0, 1500) || data.excerpt || "",
@@ -132,6 +135,7 @@ export default function ChatPage() {
             type: source.type,
             id: source.id,
             title: source.title,
+            slug: source.slug,
             content: "상세 정보를 불러올 수 없습니다.",
           });
         }
@@ -140,6 +144,7 @@ export default function ChatPage() {
           type: source.type,
           id: source.id,
           title: source.title,
+          slug: source.slug,
         });
       }
     } catch {
@@ -310,7 +315,7 @@ export default function ChatPage() {
                 href={
                   selectedSource.type === "product"
                     ? `/products/${selectedSource.id}`
-                    : `/wiki/${selectedSource.id}`
+                    : `/wiki/${selectedSource.slug || selectedSource.id}`
                 }
                 className="mt-1 inline-flex items-center gap-1 text-[11px] text-[var(--color-primary)] hover:underline"
               >

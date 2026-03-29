@@ -39,6 +39,17 @@ export async function generateEmbeddings(
   const apiKey = process.env.GOOGLE_GEMINI_API_KEY;
   if (!apiKey) throw new Error("GOOGLE_GEMINI_API_KEY not set");
 
+  // Gemini 배치 최대 100건 → 분할 처리
+  if (texts.length > 100) {
+    const allEmbeddings: number[][] = [];
+    for (let i = 0; i < texts.length; i += 100) {
+      const batch = texts.slice(i, i + 100);
+      const batchResult = await generateEmbeddings(batch);
+      allEmbeddings.push(...batchResult);
+    }
+    return allEmbeddings;
+  }
+
   const response = await fetch(
     `https://generativelanguage.googleapis.com/v1beta/models/${EMBEDDING_MODEL}:batchEmbedContents?key=${apiKey}`,
     {

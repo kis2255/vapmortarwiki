@@ -80,7 +80,7 @@ export async function POST(req: NextRequest) {
           for (let i = 0; i < chunks.length; i++) {
             const vectorStr = `[${vectors[i].join(",")}]`;
             await prisma.$executeRawUnsafe(
-              `INSERT INTO embeddings (id, content, vector, metadata, document_id, created_at)
+              `INSERT INTO embeddings (id, content, vector, metadata, "documentId", "createdAt")
                VALUES ($1, $2, $3::vector, $4::jsonb, $5, NOW())`,
               `emb-${document.id}-${i}`,
               chunks[i].content,

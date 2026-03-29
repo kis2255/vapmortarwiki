@@ -138,17 +138,19 @@ export async function generateAnswer(
     maxOutputTokens: 2000,
   });
 
-  // 5. 출처 정리
+  // 5. 출처 정리 (slug 포함)
   const sources = [
     ...chunks.slice(0, 5).map((c) => ({
       type: c.source.type,
       id: c.source.id,
       title: c.source.title,
+      slug: c.source.slug,
     })),
     ...(productData || []).map((p) => ({
       type: "product" as const,
       id: p.id,
       title: `${p.name} (${p.code})`,
+      slug: undefined as string | undefined,
     })),
   ];
 
