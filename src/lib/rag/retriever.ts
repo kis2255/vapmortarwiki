@@ -81,7 +81,7 @@ async function vectorSearch(
 }
 
 /** 한국어 질문에서 검색 키워드 추출 */
-function extractKeywords(query: string): string[] {
+export function extractKeywords(query: string): string[] {
   // 어미/조사를 단어 경계에서만 제거 (단어 중간의 글자는 보존)
   const cleaned = query
     .replace(/[?？!~.,;:'"()（）\[\]{}]/g, " ")
