@@ -64,10 +64,10 @@ export function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean; onClose
           {/* 로고 */}
           <div className="flex items-center justify-between border-b border-[var(--color-border)] px-5 py-4">
             <Link href="/" className="flex items-center gap-2.5" onClick={onClose}>
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[var(--color-primary)] text-sm font-bold text-white shadow-sm">V</div>
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[var(--color-primary)] text-[0.8125rem] font-bold text-white shadow-sm">S</div>
               <div>
-                <div className="text-sm font-bold leading-tight">VAP 특수몰탈</div>
-                <div className="text-[11px] text-[var(--color-muted)]">기술 위키</div>
+                <div className="text-[0.8125rem] font-bold leading-tight">SAMPYO 특수몰탈</div>
+                <div className="text-[0.6875rem] text-[var(--color-muted)]">WIKI</div>
               </div>
             </Link>
             <button className="rounded-md p-1 text-[var(--color-muted)] md:hidden" onClick={onClose}>
@@ -86,7 +86,7 @@ export function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean; onClose
                       href={item.href}
                       onClick={onClose}
                       className={cn(
-                        "flex items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] font-medium transition-all",
+                        "flex items-center gap-2.5 rounded-lg px-3 py-2 text-[0.8125rem] font-medium transition-all",
                         isActive
                           ? "bg-[var(--color-primary)] text-white shadow-sm"
                           : "text-[var(--color-foreground)] hover:bg-[var(--color-surface)]"
@@ -103,7 +103,7 @@ export function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean; onClose
             <div className="mt-6">
               <button
                 onClick={() => setCategoryOpen(!categoryOpen)}
-                className="flex w-full items-center gap-1.5 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-[var(--color-muted)]"
+                className="flex w-full items-center gap-1.5 px-3 py-1.5 text-[0.6875rem] font-semibold uppercase tracking-wider text-[var(--color-muted)]"
               >
                 {categoryOpen ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
                 카테고리
@@ -115,7 +115,7 @@ export function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean; onClose
                       <li key={group.slug}>
                         <button
                           onClick={() => setProductOpen(!productOpen)}
-                          className="flex w-full items-center gap-2.5 rounded-lg px-5 py-1.5 text-[13px] font-medium text-[var(--color-foreground)] transition-colors hover:bg-[var(--color-surface)]"
+                          className="flex w-full items-center gap-2.5 rounded-lg px-5 py-1.5 text-[0.8125rem] font-medium text-[var(--color-foreground)] transition-colors hover:bg-[var(--color-surface)]"
                         >
                           {productOpen ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
                           <CategoryDot slug="repair-mortar" />
@@ -128,7 +128,7 @@ export function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean; onClose
                                 <Link
                                   href={cat.href}
                                   onClick={onClose}
-                                  className="flex items-center gap-2.5 rounded-lg py-1.5 pl-10 pr-3 text-[13px] text-[var(--color-foreground)] transition-colors hover:bg-[var(--color-surface)]"
+                                  className="flex items-center gap-2.5 rounded-lg py-1.5 pl-10 pr-3 text-[0.8125rem] text-[var(--color-foreground)] transition-colors hover:bg-[var(--color-surface)]"
                                 >
                                   <CategoryDot slug={cat.slug} />
                                   {cat.name}
@@ -143,7 +143,7 @@ export function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean; onClose
                         <Link
                           href={group.href!}
                           onClick={onClose}
-                          className="flex items-center gap-2.5 rounded-lg px-5 py-1.5 text-[13px] text-[var(--color-foreground)] transition-colors hover:bg-[var(--color-surface)]"
+                          className="flex items-center gap-2.5 rounded-lg px-5 py-1.5 text-[0.8125rem] text-[var(--color-foreground)] transition-colors hover:bg-[var(--color-surface)]"
                         >
                           <CategoryDot slug={group.slug} />
                           {group.name}
