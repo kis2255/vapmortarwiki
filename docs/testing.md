@@ -52,11 +52,75 @@ src/lib/
 | `ai` (generateText) | `vi.mock('ai')` — `{ text: 'LOOKUP' }` 등 고정 반환 |
 | `@ai-sdk/google` | `vi.mock` — stub model 반환 |
 
-## 선행 리팩토링
-- `extractKeywords` 함수 export (현재 private → 직접 테스트 불가)
-- `splitBySections`, `extractTables` export (선택)
+## 완료된 리팩토링
+- ✅ `extractKeywords` 함수 export (retriever.ts)
 
-## 구현 순서
-1. Vitest 설치 + vitest.config.ts + package.json scripts
-2. Tier 1 테스트 작성 (classifier → chunker → utils → extractKeywords)
-3. Tier 2 테스트 작성 (classifyIntent → buildContext → hybridSearch)
+## 실행 방법
+```bash
+npm test              # watch 모드
+npm run test:run      # 1회 실행
+npm run test:coverage # 커버리지 포함
+```
+
+## 테스트 결과 (2026-03-29, 44건 전체 통과)
+
+### utils.test.ts (7건)
+| 테스트 | 결과 |
+|--------|------|
+| slugify: 한국어 텍스트를 하이픈 연결로 변환 | ✅ |
+| slugify: 영문을 소문자로 변환 | ✅ |
+| slugify: 다중 하이픈 축소 | ✅ |
+| slugify: 특수문자 제거, 한국어/영문/숫자 보존 | ✅ |
+| slugify: 빈 문자열 처리 | ✅ |
+| formatDate: Date 객체를 한국어 날짜로 포맷 | ✅ |
+| formatDate: 문자열 입력 처리 | ✅ |
+
+### classifier.test.ts (13건)
+| 테스트 | 결과 |
+|--------|------|
+| classifyByKeywords: TDS 키워드 매칭 (배합비, 시공방법, 양생) | ✅ |
+| classifyByKeywords: MSDS 키워드 매칭 (CAS번호, 안전보건자료) | ✅ |
+| classifyByKeywords: TEST_REPORT 키워드 매칭 (시험결과, 압축강도) | ✅ |
+| classifyByKeywords: CERTIFICATE 키워드 매칭 (인증번호) | ✅ |
+| classifyByKeywords: 키워드 없으면 OTHER, confidence 0 | ✅ |
+| classifyByKeywords: confidence가 1.0을 초과하지 않음 | ✅ |
+| classifyByKeywords: 대소문자 무시 (msds → MSDS) | ✅ |
+| classifyByKeywords: 혼합 키워드 시 가중치 높은 쪽 승리 | ✅ |
+| classifyByFilename: TDS/MSDS/SDS/시험/인식불가 파일명 (5건) | ✅ |
+| classifyDocument: 파일명 매칭 우선 (confidence 0.8) | ✅ |
+| classifyDocument: 파일명 미매칭 → 키워드 폴백 | ✅ |
+| classifyDocument: 둘 다 미매칭 → unknown | ✅ |
+
+### chunker.test.ts (10건)
+| 테스트 | 결과 |
+|--------|------|
+| chunkText: 짧은 텍스트 (20자 이상) → 단일 청크 | ✅ |
+| chunkText: 20자 미만 청크는 제거 | ✅ |
+| chunkText: 마크다운 헤딩으로 섹션 분할 | ✅ |
+| chunkText: 테이블을 별도 청크로 분리 (section='table') | ✅ |
+| chunkText: metadata에 section 정보 포함 | ✅ |
+| chunkText: 빈 문자열 → 빈 배열 | ✅ |
+| chunkText: metadata가 전파됨 (source, sourceId, sourceType) | ✅ |
+| productToText: 모든 필드 포함 시 전체 포맷팅 | ✅ |
+| productToText: null 필드 생략 (undefined 텍스트 없음) | ✅ |
+| productToText: properties 없으면 물성 섹션 미포함 | ✅ |
+
+### retriever.test.ts (14건)
+| 테스트 | 결과 |
+|--------|------|
+| extractKeywords: 기본 키워드 추출 | ✅ |
+| extractKeywords: 한국어 어미 제거 (해줘, 알려줘) | ✅ |
+| extractKeywords: 질문형 어미 제거 (인가요, 뭐야) | ✅ |
+| extractKeywords: 제품 코드 보존 | ✅ |
+| extractKeywords: 구두점 제거 | ✅ |
+| extractKeywords: 1글자 키워드 필터링 (length >= 2) | ✅ |
+| extractKeywords: 빈 질문 → 원본 반환 | ✅ |
+| extractKeywords: 복합 질문에서 핵심어 추출 | ✅ |
+| 제품 코드 정규식: SG 80ES 형태 | ✅ |
+| 제품 코드 정규식: RM-100 형태 매칭 | ✅ |
+| 제품 코드 정규식: 복수 코드 추출 | ✅ |
+
+### 요약
+- **4 파일, 44건 전체 통과**
+- **실행 시간**: ~400ms
+- **Tier 2 (Mock 필요)**: 미구현 — generator.test.ts (classifyIntent, buildContext, hybridSearch 점수)
