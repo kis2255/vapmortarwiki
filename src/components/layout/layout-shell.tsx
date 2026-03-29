@@ -16,6 +16,7 @@ const fontSizeMap: Record<FontSize, { label: string; value: string; body: string
 
 export function LayoutShell({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [theme, setTheme] = useState<Theme>("system");
   const [fontSize, setFontSize] = useState<FontSize>("base");
@@ -63,7 +64,12 @@ export function LayoutShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex h-screen">
-      <Sidebar mobileOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <Sidebar
+        mobileOpen={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+        collapsed={sidebarCollapsed}
+        onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
+      />
       <div className="flex flex-1 flex-col overflow-hidden">
         {/* 헤더 */}
         <header className="sticky top-0 z-20 flex h-14 items-center gap-3 border-b border-[var(--color-border)] bg-[var(--color-surface)]/85 px-4 backdrop-blur-md sm:px-5">

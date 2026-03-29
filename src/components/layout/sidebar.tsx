@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import {
   Home, Package, FileText, Upload, MessageCircle,
   Search, BookOpen, ChevronDown, ChevronRight, X,
+  PanelLeftClose, PanelLeftOpen,
 } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
@@ -43,7 +44,12 @@ const categoryGroups = [
   },
 ];
 
-export function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean; onClose?: () => void }) {
+export function Sidebar({ mobileOpen, onClose, collapsed, onToggleCollapse }: {
+  mobileOpen?: boolean;
+  onClose?: () => void;
+  collapsed?: boolean;
+  onToggleCollapse?: () => void;
+}) {
   const pathname = usePathname();
   const [categoryOpen, setCategoryOpen] = useState(true);
   const [productOpen, setProductOpen] = useState(true);
@@ -56,20 +62,27 @@ export function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean; onClose
       )}
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-50 w-[260px] shrink-0 border-r border-[var(--color-border)] bg-[var(--color-sidebar)] transition-transform md:relative md:translate-x-0",
+          "fixed inset-y-0 left-0 z-50 shrink-0 border-r border-[var(--color-border)] bg-[var(--color-sidebar)] transition-all duration-200 md:relative md:translate-x-0",
+          collapsed ? "w-[60px]" : "w-[260px]",
           mobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
         )}
       >
         <div className="flex h-full flex-col">
           {/* 로고 */}
-          <div className="flex items-center justify-between border-b border-[var(--color-border)] px-5 py-4">
-            <Link href="/" className="flex items-center gap-2.5" onClick={onClose}>
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[var(--color-primary)] text-[0.8125rem] font-bold text-white shadow-sm">S</div>
-              <div>
-                <div className="text-[0.8125rem] font-bold leading-tight">SAMPYO 특수몰탈</div>
-                <div className="text-[0.6875rem] text-[var(--color-muted)]">WIKI</div>
-              </div>
-            </Link>
+          <div className="flex items-center justify-between border-b border-[var(--color-border)] px-3 py-4">
+            {collapsed ? (
+              <Link href="/" className="mx-auto flex h-9 w-9 items-center justify-center rounded-lg bg-[var(--color-primary)] text-[0.875rem] font-bold text-white shadow-sm" onClick={onClose}>
+                S
+              </Link>
+            ) : (
+              <Link href="/" className="flex items-center gap-2.5 px-2" onClick={onClose}>
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--color-primary)] text-[0.875rem] font-bold text-white shadow-sm">S</div>
+                <div>
+                  <div className="text-[0.9375rem] font-bold leading-tight">SAMPYO 특수몰탈</div>
+                  <div className="text-[0.75rem] font-medium text-[var(--color-muted)]">WIKI</div>
+                </div>
+              </Link>
+            )}
             <button className="rounded-md p-1 text-[var(--color-muted)] md:hidden" onClick={onClose}>
               <X size={18} />
             </button>
@@ -85,22 +98,24 @@ export function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean; onClose
                     <Link
                       href={item.href}
                       onClick={onClose}
+                      title={collapsed ? item.name : undefined}
                       className={cn(
-                        "flex items-center gap-2.5 rounded-lg px-3 py-2 text-[0.8125rem] font-medium transition-all",
+                        "flex items-center rounded-lg py-2 text-[0.8125rem] font-medium transition-all",
+                        collapsed ? "justify-center px-2" : "gap-2.5 px-3",
                         isActive
                           ? "bg-[var(--color-primary)] text-white shadow-sm"
                           : "text-[var(--color-foreground)] hover:bg-[var(--color-surface)]"
                       )}
                     >
                       <item.icon size={18} strokeWidth={isActive ? 2.2 : 1.8} />
-                      {item.name}
+                      {!collapsed && item.name}
                     </Link>
                   </li>
                 );
               })}
             </ul>
 
-            <div className="mt-6">
+            {!collapsed && <div className="mt-6">
               <button
                 onClick={() => setCategoryOpen(!categoryOpen)}
                 className="flex w-full items-center gap-1.5 px-3 py-1.5 text-[0.6875rem] font-semibold uppercase tracking-wider text-[var(--color-muted)]"
@@ -153,8 +168,19 @@ export function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean; onClose
                   )}
                 </ul>
               )}
-            </div>
+            </div>}
           </nav>
+
+          {/* 접기/펼치기 토글 */}
+          <div className="hidden border-t border-[var(--color-border)] p-2 md:block">
+            <button
+              onClick={onToggleCollapse}
+              className="flex w-full items-center justify-center gap-2 rounded-lg px-3 py-2 text-[0.75rem] text-[var(--color-muted)] transition-colors hover:bg-[var(--color-surface)] hover:text-[var(--color-foreground)]"
+              title={collapsed ? "메뉴 펼치기" : "메뉴 접기"}
+            >
+              {collapsed ? <PanelLeftOpen size={16} /> : <><PanelLeftClose size={16} /> 메뉴 접기</>}
+            </button>
+          </div>
         </div>
       </aside>
     </>
