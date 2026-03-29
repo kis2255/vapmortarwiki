@@ -21,13 +21,13 @@ const navigation = [
 ];
 
 const categories = [
-  { name: "보수몰탈", slug: "repair-mortar" },
-  { name: "방수몰탈", slug: "waterproof-mortar" },
-  { name: "바닥몰탈", slug: "floor-mortar" },
-  { name: "주입재", slug: "injection" },
-  { name: "그라우트", slug: "grout" },
-  { name: "시장/경쟁사", slug: "market-analysis" },
-  { name: "국제규격", slug: "international-standards" },
+  { name: "보수몰탈", slug: "repair-mortar", href: "/products?category=repair-mortar" },
+  { name: "방수몰탈", slug: "waterproof-mortar", href: "/products?category=waterproof-mortar" },
+  { name: "바닥몰탈", slug: "floor-mortar", href: "/products?category=floor-mortar" },
+  { name: "주입재", slug: "injection", href: "/products?category=injection" },
+  { name: "그라우트", slug: "grout", href: "/products?category=grout" },
+  { name: "시장/경쟁사", slug: "market-analysis", href: "/wiki?category=market-analysis" },
+  { name: "국제규격", slug: "international-standards", href: "/wiki?category=international-standards" },
 ];
 
 export function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean; onClose?: () => void }) {
@@ -99,7 +99,7 @@ export function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean; onClose
                   {categories.map((cat) => (
                     <li key={cat.slug}>
                       <Link
-                        href={`/products?category=${cat.slug}`}
+                        href={cat.href}
                         onClick={onClose}
                         className="flex items-center gap-2.5 rounded-lg px-5 py-1.5 text-[13px] text-[var(--color-foreground)] transition-colors hover:bg-[var(--color-surface)]"
                       >

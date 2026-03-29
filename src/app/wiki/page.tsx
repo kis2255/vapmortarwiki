@@ -5,9 +5,18 @@ import { formatDate } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
-export default async function WikiPage() {
+export default async function WikiPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ category?: string }>;
+}) {
+  const { category } = await searchParams;
+
   const articles = await prisma.article.findMany({
-    where: { published: true },
+    where: {
+      published: true,
+      ...(category && { category: { slug: category } }),
+    },
     include: { category: true },
     orderBy: { updatedAt: "desc" },
   });
