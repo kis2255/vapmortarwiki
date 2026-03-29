@@ -97,7 +97,7 @@ export default async function DocumentsPage() {
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-1">
                         {doc.filePath && (
-                          <a href={`/${doc.filePath}`} download title="다운로드" className="rounded-md p-1.5 text-[var(--color-muted)] hover:bg-[var(--color-sidebar)] hover:text-[var(--color-foreground)]">
+                          <a href={doc.filePath.startsWith("http") ? doc.filePath : `/${doc.filePath}`} target="_blank" rel="noopener noreferrer" title="다운로드" className="rounded-md p-1.5 text-[var(--color-muted)] hover:bg-[var(--color-sidebar)] hover:text-[var(--color-foreground)]">
                             <Download size={14} />
                           </a>
                         )}
