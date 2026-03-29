@@ -181,17 +181,21 @@ export default async function ProductDetailPage({
               <div className="border-b border-[var(--color-border)] bg-[var(--color-sidebar)] px-4 py-3">
                 <h2 className="text-sm font-semibold">관련 규격</h2>
               </div>
-              <div className="p-4">
+              <div className="p-4 space-y-2">
                 {product.standards.map((ps) => (
-                  <div key={ps.standardId} className="mb-2 last:mb-0">
-                    <div className="flex items-center gap-1 text-sm font-medium text-[var(--color-primary)]">
-                      <ExternalLink size={12} />
+                  <Link
+                    key={ps.standardId}
+                    href={`/wiki/standards/${ps.standard.id}`}
+                    className="group block rounded-lg border border-[var(--color-border)] p-2.5 transition-colors hover:border-[var(--color-primary)] hover:bg-[var(--color-primary-light)]"
+                  >
+                    <div className="flex items-center gap-1.5 text-sm font-medium text-[var(--color-primary)]">
+                      <ExternalLink size={12} className="group-hover:text-[var(--color-primary)]" />
                       {ps.standard.code}
                     </div>
-                    <p className="text-xs text-[var(--color-muted)]">
+                    <p className="mt-0.5 text-xs text-[var(--color-muted)]">
                       {ps.standard.name}
                     </p>
-                  </div>
+                  </Link>
                 ))}
               </div>
             </div>
