@@ -3,6 +3,8 @@
 import { useState, useRef, useEffect } from "react";
 import { Send, Bot, User, FileText, Loader2, X, ExternalLink, Package, BookOpen } from "lucide-react";
 import { cn } from "@/lib/utils";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 interface Source {
   type: string;
@@ -197,7 +199,34 @@ export default function ChatPage() {
                     : "rounded-2xl rounded-bl-sm border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3 shadow-[var(--shadow-sm)]"
                 )}
               >
-                <div className="whitespace-pre-wrap">{msg.content}</div>
+                <div className={msg.role === "user" ? "whitespace-pre-wrap" : "chat-markdown"}>
+                  {msg.role === "user" ? msg.content : (
+                    <ReactMarkdown
+                      remarkPlugins={[remarkGfm]}
+                      components={{
+                        h1: ({ children }) => <h3 className="mt-3 mb-1 text-sm font-bold">{children}</h3>,
+                        h2: ({ children }) => <h3 className="mt-3 mb-1 text-sm font-bold">{children}</h3>,
+                        h3: ({ children }) => <h4 className="mt-2 mb-1 text-sm font-semibold">{children}</h4>,
+                        p: ({ children }) => <p className="mt-1.5 mb-1.5 text-sm leading-relaxed">{children}</p>,
+                        ul: ({ children }) => <ul className="ml-4 mt-1 mb-1 list-disc space-y-0.5">{children}</ul>,
+                        ol: ({ children }) => <ol className="ml-4 mt-1 mb-1 list-decimal space-y-0.5">{children}</ol>,
+                        li: ({ children }) => <li className="text-sm leading-relaxed">{children}</li>,
+                        strong: ({ children }) => <strong className="font-semibold text-[var(--color-text)]">{children}</strong>,
+                        table: ({ children }) => (
+                          <div className="my-2 overflow-x-auto rounded-lg border border-[var(--color-border)]">
+                            <table className="w-full text-xs border-collapse">{children}</table>
+                          </div>
+                        ),
+                        thead: ({ children }) => <thead className="bg-[var(--color-sidebar)]">{children}</thead>,
+                        th: ({ children }) => <th className="border-b border-[var(--color-border)] px-2.5 py-1.5 text-left text-xs font-semibold">{children}</th>,
+                        td: ({ children }) => <td className="border-b border-[var(--color-border)] px-2.5 py-1.5 text-xs">{children}</td>,
+                        code: ({ children }) => <code className="rounded bg-[var(--color-sidebar)] px-1 py-0.5 text-xs font-mono">{children}</code>,
+                      }}
+                    >
+                      {msg.content}
+                    </ReactMarkdown>
+                  )}
+                </div>
                 {msg.sources && msg.sources.length > 0 && (
                   <div className="mt-3 border-t border-[var(--color-border)] pt-3">
                     <div className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-[var(--color-muted)]">
@@ -338,8 +367,30 @@ export default function ChatPage() {
                   로딩 중...
                 </div>
               ) : selectedSource.content ? (
-                <div className="whitespace-pre-wrap text-[13px] leading-relaxed text-[var(--color-foreground)]">
-                  {selectedSource.content}
+                <div className="chat-markdown text-[13px] leading-relaxed text-[var(--color-foreground)]">
+                  <ReactMarkdown
+                    remarkPlugins={[remarkGfm]}
+                    components={{
+                      h1: ({ children }) => <h3 className="mt-3 mb-1 text-sm font-bold">{children}</h3>,
+                      h2: ({ children }) => <h3 className="mt-3 mb-1 text-sm font-bold">{children}</h3>,
+                      h3: ({ children }) => <h4 className="mt-2 mb-1 text-[13px] font-semibold">{children}</h4>,
+                      p: ({ children }) => <p className="mt-1 mb-1 text-[13px] leading-relaxed">{children}</p>,
+                      ul: ({ children }) => <ul className="ml-4 mt-1 mb-1 list-disc space-y-0.5">{children}</ul>,
+                      ol: ({ children }) => <ol className="ml-4 mt-1 mb-1 list-decimal space-y-0.5">{children}</ol>,
+                      li: ({ children }) => <li className="text-[13px] leading-relaxed">{children}</li>,
+                      strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
+                      table: ({ children }) => (
+                        <div className="my-2 overflow-x-auto rounded-lg border border-[var(--color-border)]">
+                          <table className="w-full text-xs border-collapse">{children}</table>
+                        </div>
+                      ),
+                      thead: ({ children }) => <thead className="bg-[var(--color-sidebar)]">{children}</thead>,
+                      th: ({ children }) => <th className="border-b border-[var(--color-border)] px-2 py-1.5 text-left text-xs font-semibold">{children}</th>,
+                      td: ({ children }) => <td className="border-b border-[var(--color-border)] px-2 py-1.5 text-xs">{children}</td>,
+                    }}
+                  >
+                    {selectedSource.content}
+                  </ReactMarkdown>
                 </div>
               ) : (
                 <p className="text-sm text-[var(--color-muted)]">
