@@ -133,7 +133,7 @@ vapmortarwiki/
 ### 현행 DB 현황 (Supabase)
 | 테이블 | 건수 | 설명 |
 |--------|------|------|
-| categories | 5 | 보수/방수/바닥/주입/그라우트 |
+| categories | 7 | 보수/방수/바닥/주입/그라우트/시장경쟁사/국제규격 |
 | products | 7 | VAP 제품 (물성 27건) |
 | standards | 13 | KS 7 + EN/ASTM/ACI/BS 6 |
 | articles | 16 | 위키 문서 |
@@ -151,26 +151,35 @@ Category ──< Product ──< ProductProperty
 ChatSession ──< ChatMessage
 ```
 
-## 페이지 맵 (19개 라우트)
+## 사용자 설정 기능
+| 기능 | 설명 | 저장 |
+|------|------|------|
+| **다크/라이트 모드** | 헤더 우측 Sun/Monitor/Moon 토글. 3가지: 라이트/시스템/다크 | localStorage `vap-theme` |
+| **폰트 크기 조절** | 헤더 우측 -/+/보통 버튼. 3단계: 작게(13px)/보통(14px)/크게(16px) | localStorage `vap-fontsize` |
+| **모바일 사이드바** | 햄버거 메뉴 → 오버레이 + 슬라이드 사이드바 | - |
+
+## 페이지 맵 (21개 라우트)
 | 경로 | 타입 | 기능 |
 |------|------|------|
 | `/` | Dynamic | 대시보드 (통계 카드, AI 배너, 최근문서, 시장동향) |
-| `/products` | Dynamic | 제품 목록 (카테고리 배지, 필터, 검색) |
+| `/products` | Dynamic | 제품 목록 (카테고리 배지 7색, 필터, 검색) |
 | `/products/[id]` | Dynamic | 제품 상세 (물성 합격/불합격 테이블, Infobox, 시공방법) |
 | `/products/new` | Static | 제품 등록 폼 |
-| `/wiki` | Dynamic | 위키 목록 (태그, 카테고리) |
-| `/wiki/[slug]` | Dynamic | 위키 상세 (react-markdown, TOC, 태그) |
+| `/wiki` | Dynamic | 위키 목록 (16건, 태그, 카테고리 7개) |
+| `/wiki/[slug]` | Dynamic | 위키 상세 (react-markdown, TOC, 태그, **편집 버튼**) |
+| `/wiki/[slug]/edit` | Static | **위키 편집** (제목/본문/태그/카테고리 수정, 버전 자동 증가) |
 | `/wiki/new` | Static | 위키 Markdown 에디터 + 미리보기 |
-| `/wiki/standards` | Dynamic | KS/EN/ASTM 규격 목록 (관련 제품 링크) |
+| `/wiki/standards` | Dynamic | KS/EN/ASTM 규격 목록 13건 (관련 제품 링크) |
+| `/documents` | Dynamic | **PDF 문서 목록** (파일명, 분류, 페이지, 임베딩 건수, 텍스트 미리보기) |
 | `/chat` | Static | AI 채팅 (출처 클릭 → 오른쪽 상세 패널) |
 | `/upload` | Static | PDF 드래그앤드롭 업로드 + 자동분류 |
-| `/search` | Static | 통합 검색 (유형별 필터 탭) |
+| `/search` | Static | **통합 검색** (실시간 결과 카드, 유형별 필터 탭 + 건수 배지) |
 | `/api/chat` | API | RAG 답변 (의도분류 → 검색 → Gemini 생성) |
 | `/api/search` | API | 통합 검색 (제품/문서/PDF/규격) |
 | `/api/products` | API | 제품 GET/POST |
 | `/api/products/[id]` | API | 제품 상세 GET |
 | `/api/articles` | API | 위키 GET/POST (+임베딩 자동생성) |
-| `/api/articles/[id]` | API | 위키 상세 GET (id 또는 slug) |
+| `/api/articles/[id]` | API | 위키 상세 GET + **PUT(편집)** |
 | `/api/upload` | API | PDF 업로드 → 추출 → 분류 → 임베딩 |
 
 ## 업로드된 PDF 현황
@@ -247,6 +256,8 @@ PDF 업로드 → 텍스트 추출 → 청킹(15~151건)
 | 6. Supabase 전환 | ✅ | PostgreSQL + pgvector HNSW |
 | 7. UI 개선 | ✅ | 컬러 시스템, 배지, 물성 테이블, 채팅 버블 |
 | 8. 글로벌 자료 | ✅ | Saint-Gobain/Fosroc/Weber, EN1504, PDF 8건 |
+| 9. 기능 확장 | ✅ | PDF 목록, 검색 결과, 위키 편집, 모바일 사이드바, 카테고리 7개 |
+| 10. 사용자 설정 | ✅ | 다크/라이트/시스템 모드 토글, 폰트 크기 3단계 조절 |
 
 ## 환경 변수
 ```

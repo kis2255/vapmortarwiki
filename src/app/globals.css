@@ -41,19 +41,24 @@
   --cat-grout-bg: #d1fae5;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --color-background: #0c0f14;
-    --color-foreground: #e5e7eb;
-    --color-sidebar: #12151c;
-    --color-border: #1f2937;
-    --color-surface: #161b26;
-    --color-surface-hover: #1c2333;
-    --color-muted: #9ca3af;
-    --color-primary: #3b82f6;
-    --color-primary-light: #1e3a5f;
-    --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.03);
-  }
+.dark {
+  --color-background: #0c0f14;
+  --color-foreground: #e5e7eb;
+  --color-sidebar: #12151c;
+  --color-border: #1f2937;
+  --color-surface: #161b26;
+  --color-surface-hover: #1c2333;
+  --color-muted: #9ca3af;
+  --color-primary: #3b82f6;
+  --color-primary-hover: #2563eb;
+  --color-primary-light: #1e3a5f;
+  --color-success: #34d399;
+  --color-success-bg: #064e3b;
+  --color-danger: #f87171;
+  --color-danger-bg: #7f1d1d;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.03);
 }
 
 body {
