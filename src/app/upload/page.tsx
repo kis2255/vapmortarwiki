@@ -12,6 +12,9 @@ interface UploadedFile {
   autoType?: string;
   confirmedType?: string;
   linkedProduct?: string;
+  visionUsed?: boolean;
+  imagePages?: number;
+  embeddingCount?: number;
 }
 
 const documentTypes = [
@@ -66,6 +69,9 @@ export default function UploadPage() {
                     status: "done" as const,
                     autoType: data.classification?.type || "OTHER",
                     confirmedType: data.documentType,
+                    visionUsed: data.visionUsed,
+                    imagePages: data.visionPages?.filter((p: { hasImages: boolean }) => p.hasImages).length,
+                    embeddingCount: data.embeddingCount,
                   }
                 : f
             )
@@ -92,7 +98,7 @@ export default function UploadPage() {
       <div className="mb-6">
         <h1 className="text-xl font-bold">PDF 자료 업로드</h1>
         <p className="text-sm text-[var(--color-muted)]">
-          PDF를 업로드하면 AI가 자동으로 문서 유형을 분류합니다
+          PDF를 업로드하면 AI Vision이 이미지·그래프·표를 포함한 전체 내용을 분석합니다
         </p>
       </div>
 
@@ -142,6 +148,7 @@ export default function UploadPage() {
                 <tr>
                   <th className="px-4 py-2 text-left font-semibold">파일명</th>
                   <th className="w-32 px-4 py-2 text-left font-semibold">AI 분류</th>
+                  <th className="w-32 px-4 py-2 text-left font-semibold">Vision 분석</th>
                   <th className="w-40 px-4 py-2 text-left font-semibold">확정 분류</th>
                   <th className="w-36 px-4 py-2 text-left font-semibold">제품 연결</th>
                 </tr>
@@ -169,6 +176,21 @@ export default function UploadPage() {
                           <CheckCircle size={12} /> {file.autoType}
                         </span>
                       )}
+                    </td>
+                    <td className="px-4 py-2">
+                      {file.status === "classifying" ? (
+                        <span className="flex items-center gap-1 text-[var(--color-muted)]">
+                          <Loader2 size={12} className="animate-spin" /> 분석 중
+                        </span>
+                      ) : file.visionUsed ? (
+                        <span className="flex items-center gap-1 text-blue-600 dark:text-blue-400">
+                          <CheckCircle size={12} />
+                          {file.imagePages ? `이미지 ${file.imagePages}p` : "텍스트"}
+                          {file.embeddingCount ? ` · ${file.embeddingCount}청크` : ""}
+                        </span>
+                      ) : file.status === "done" ? (
+                        <span className="text-[var(--color-muted)]">텍스트만</span>
+                      ) : null}
                     </td>
                     <td className="px-4 py-2">
                       <select
