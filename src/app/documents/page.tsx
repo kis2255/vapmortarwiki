@@ -115,10 +115,33 @@ export default async function DocumentsPage() {
       </div>
 
       <div className="mt-4 rounded-xl border border-[var(--color-border)] bg-[var(--color-sidebar)] p-4 text-[13px]">
-        <p className="font-semibold">PDF 반영 과정</p>
-        <p className="mt-1 text-[var(--color-muted)]">
-          업로드 → 텍스트 추출 → AI 자동분류 → 청킹 → Gemini 임베딩(768차원) → pgvector 저장 → AI 채팅에서 검색 가능
-        </p>
+        <p className="font-semibold">PDF 반영 과정 (Gemini Vision 파이프라인)</p>
+        <div className="mt-2 space-y-2 text-[var(--color-muted)]">
+          <div className="flex items-start gap-2">
+            <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-100 text-[10px] font-bold text-blue-700 dark:bg-blue-900 dark:text-blue-300">1</span>
+            <p><span className="font-medium text-[var(--color-foreground)]">Vision 분석</span> — PDF를 Gemini 2.0 Flash Vision API에 전송, 페이지별 이미지·그래프·표·텍스트를 통합 분석</p>
+          </div>
+          <div className="flex items-start gap-2">
+            <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-100 text-[10px] font-bold text-blue-700 dark:bg-blue-900 dark:text-blue-300">2</span>
+            <p><span className="font-medium text-[var(--color-foreground)]">이미지 해석</span> — 그래프의 축·범례·데이터 포인트 수치 추출, 시공 사진 설명, 도면 분석</p>
+          </div>
+          <div className="flex items-start gap-2">
+            <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-100 text-[10px] font-bold text-blue-700 dark:bg-blue-900 dark:text-blue-300">3</span>
+            <p><span className="font-medium text-[var(--color-foreground)]">자동 번역</span> — 영문·일문 PDF는 Vision 단계에서 한국어로 자동 번역 (기술 용어는 원문 유지)</p>
+          </div>
+          <div className="flex items-start gap-2">
+            <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-100 text-[10px] font-bold text-blue-700 dark:bg-blue-900 dark:text-blue-300">4</span>
+            <p><span className="font-medium text-[var(--color-foreground)]">AI 분류</span> — TDS, MSDS, 시험성적서, 인증서, 시공사례 등 문서 유형 자동 분류</p>
+          </div>
+          <div className="flex items-start gap-2">
+            <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-100 text-[10px] font-bold text-blue-700 dark:bg-blue-900 dark:text-blue-300">5</span>
+            <p><span className="font-medium text-[var(--color-foreground)]">청킹 + 임베딩</span> — 섹션·테이블 단위 분할 → Gemini 768차원 벡터 생성 → pgvector 저장</p>
+          </div>
+          <div className="flex items-start gap-2">
+            <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-[10px] font-bold text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300">✓</span>
+            <p><span className="font-medium text-[var(--color-foreground)]">검색 반영</span> — AI 채팅, 키워드 검색에서 이미지 속 데이터까지 검색 가능</p>
+          </div>
+        </div>
       </div>
     </div>
   );
