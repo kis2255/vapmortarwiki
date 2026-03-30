@@ -9,9 +9,9 @@ type Theme = "light" | "dark" | "system";
 type FontSize = "sm" | "base" | "lg";
 
 const fontSizeMap: Record<FontSize, { label: string; value: string; body: string }> = {
-  sm: { label: "작게", value: "13px", body: "text-[13px]" },
-  base: { label: "보통", value: "14px", body: "text-[14px]" },
-  lg: { label: "크게", value: "16px", body: "text-[16px]" },
+  sm: { label: "작게", value: "16px", body: "text-[16px]" },
+  base: { label: "보통", value: "17px", body: "text-[17px]" },
+  lg: { label: "크게", value: "18px", body: "text-[18px]" },
 };
 
 export function LayoutShell({ children }: { children: React.ReactNode }) {
