@@ -5,13 +5,14 @@ import { usePathname } from "next/navigation";
 import {
   Home, Package, FileText, Upload, MessageCircle,
   Search, BookOpen, ChevronDown, ChevronRight, X,
-  PanelLeftClose, PanelLeftOpen,
+  PanelLeftClose, PanelLeftOpen, LayoutDashboard,
 } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { CategoryDot } from "@/components/ui/category-badge";
 
 const navigation = [
+  { name: "프로젝트 현황", href: "/dashboard", icon: LayoutDashboard },
   { name: "대시보드", href: "/", icon: Home },
   { name: "제품 DB", href: "/products", icon: Package },
   { name: "위키 문서", href: "/wiki", icon: FileText },
