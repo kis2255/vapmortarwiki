@@ -30,7 +30,7 @@ DOMAIN     = "vapm.sampyo.co.kr"
 GH_TOKEN   = os.environ.get("GH_TOKEN", "")
 REPO_URL   = f"https://{GH_TOKEN}@github.com/kis2255/vapmortarwiki.git" if GH_TOKEN else "https://github.com/kis2255/vapmortarwiki.git"
 REPO_DIR   = f"/home/{USER}/vapmortarwiki"
-APP_PORT   = 8002                           # 호스트 포트
+APP_PORT   = 8003                           # 호스트 포트
 BASE_LOCAL = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # SSL 인증서 경로 (sam-workmanual에서 관리하는 와일드카드 인증서)
