@@ -1,0 +1,46 @@
+# 운영 배포용: 앱 + PostgreSQL + pgvector
+# 사용법: docker compose up -d --build
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg17
+    container_name: vapmortarwiki-db
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:5433:5432"
+    environment:
+      POSTGRES_DB: vapmortarwiki
+      POSTGRES_USER: vapmwiki
+      POSTGRES_PASSWORD: vapmwiki1234
+    volumes:
+      - vapmwiki_pgdata:/var/lib/postgresql/data
+      - ./docker/initdb:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U vapmwiki -d vapmortarwiki"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build: .
+    container_name: vapmortarwiki-app
+    restart: unless-stopped
+    ports:
+      - "8002:3000"
+    env_file:
+      - .env.prod
+    environment:
+      # Docker 내부 네트워크에서 DB 접근
+      DATABASE_URL: "postgresql://vapmwiki:vapmwiki1234@postgres:5432/vapmortarwiki"
+      DIRECT_URL: "postgresql://vapmwiki:vapmwiki1234@postgres:5432/vapmortarwiki"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  vapmwiki_pgdata:

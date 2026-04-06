@@ -21,7 +21,6 @@
   "dependencies": {
     "@ai-sdk/google": "^3.0.53",
     "@prisma/client": "^6.19.2",
-    "@supabase/supabase-js": "^2.101.0",
     "@tailwindcss/postcss": "^4.2.2",
     "@tiptap/extension-table": "^3.21.0",
     "@tiptap/extension-table-cell": "^3.21.0",

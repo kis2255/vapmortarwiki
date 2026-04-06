@@ -1,9 +1,9 @@
 /**
- * PDF → 페이지 이미지(PNG) → Supabase Storage 업로드 → 위키 문서 자동 생성
+ * PDF → 페이지 이미지(PNG) → 로컬 저장 → 위키 문서 자동 생성
  *
  * 각 PDF에 대해:
  *  1. 페이지를 PNG로 렌더링
- *  2. Supabase Storage(pdf-pages 버킷)에 업로드
+ *  2. public/uploads/pdf-pages/ 에 로컬 저장
  *  3. Vision 분석 텍스트 + 이미지 URL로 위키 문서 생성
  *
  * 실행: npx tsx scripts/pdf-to-wiki-with-images.ts
@@ -12,16 +12,11 @@
 import fs from "fs";
 import path from "path";
 import { PrismaClient } from "@prisma/client";
-import { createClient } from "@supabase/supabase-js";
 
 const prisma = new PrismaClient();
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_ANON_KEY!
-);
 
 const PDF_DIR = path.resolve(__dirname, "../downloads");
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const UPLOAD_DIR = path.resolve(__dirname, "../public/uploads/pdf-pages");
 
 // ─── PDF → PNG 변환 ───
 
@@ -42,7 +37,7 @@ async function pdfToImages(
   return images;
 }
 
-// ─── Supabase Storage 업로드 ───
+// ─── 로컬 파일 저장 ───
 
 async function uploadImage(
   fileName: string,
@@ -50,18 +45,16 @@ async function uploadImage(
   imageBuffer: Buffer
 ): Promise<string> {
   const safeName = fileName.replace(/\.pdf$/i, "").replace(/[^a-zA-Z0-9_-]/g, "_");
-  const storagePath = `${safeName}/page-${page}.png`;
+  const dirPath = path.join(UPLOAD_DIR, safeName);
 
-  const { error } = await supabase.storage
-    .from("pdf-pages")
-    .upload(storagePath, imageBuffer, {
-      contentType: "image/png",
-      upsert: true,
-    });
+  // 디렉토리 생성
+  fs.mkdirSync(dirPath, { recursive: true });
 
-  if (error) throw new Error(`Storage upload failed: ${error.message}`);
+  const filePath = path.join(dirPath, `page-${page}.png`);
+  fs.writeFileSync(filePath, imageBuffer);
 
-  return `${SUPABASE_URL}/storage/v1/object/public/pdf-pages/${storagePath}`;
+  // public 기준 상대 경로 → 웹 URL
+  return `/uploads/pdf-pages/${safeName}/page-${page}.png`;
 }
 
 // ─── Vision 분석 텍스트 가져오기 ───
@@ -190,6 +183,9 @@ async function createSearchChunks(
 // ─── 메인 ───
 
 async function main() {
+  // 업로드 디렉토리 생성
+  fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+
   const files = fs.readdirSync(PDF_DIR).filter((f) => f.endsWith(".pdf"));
   console.log(`\n📄 PDF ${files.length}건 → 이미지 변환 + 위키 생성\n`);
 
@@ -207,17 +203,17 @@ async function main() {
       continue;
     }
 
-    // 2. Supabase Storage 업로드
+    // 2. 로컬 저장
     const imageUrls: { page: number; url: string }[] = [];
     for (const img of images) {
       try {
         const url = await uploadImage(fileName, img.page, img.buffer);
         imageUrls.push({ page: img.page, url });
       } catch (e) {
-        console.error(`  ✗ 페이지 ${img.page} 업로드 실패:`, e);
+        console.error(`  ✗ 페이지 ${img.page} 저장 실패:`, e);
       }
     }
-    console.log(`  ${imageUrls.length}개 이미지 업로드 완료`);
+    console.log(`  ${imageUrls.length}개 이미지 저장 완료`);
 
     // 3. Vision 분석 텍스트 가져오기
     const doc = await prisma.document.findFirst({

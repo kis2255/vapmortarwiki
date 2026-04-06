@@ -25,8 +25,9 @@ npm-debug.log*
 # env files
 .env
 .env*.local
+.env.prod
 
-# vercel
+# vercel (비활성화됨)
 .vercel
 
 # typescript
@@ -40,5 +41,8 @@ prisma/*.db-journal
 # uploads
 public/uploads/*
 !public/uploads/.gitkeep
+!public/uploads/pdf-pages
+public/uploads/pdf-pages/*
+!public/uploads/pdf-pages/.gitkeep
 
 .vercel
