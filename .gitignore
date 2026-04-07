@@ -44,5 +44,6 @@ public/uploads/*
 !public/uploads/pdf-pages
 public/uploads/pdf-pages/*
 !public/uploads/pdf-pages/.gitkeep
+!public/uploads/pdfs
 
 .vercel

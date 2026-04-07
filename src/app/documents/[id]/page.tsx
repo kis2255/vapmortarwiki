@@ -67,9 +67,9 @@ export default async function DocumentDetailPage({
               </div>
             </div>
           </div>
-          {doc.filePath && (
+          {doc.fileName && (
             <a
-              href={doc.filePath.startsWith("http") ? doc.filePath : `/${doc.filePath}`}
+              href={`/uploads/pdfs/${encodeURIComponent(doc.fileName)}`}
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-1.5 rounded-lg bg-[var(--color-primary)] px-4 py-2 text-[13px] font-medium text-white shadow-sm hover:bg-[var(--color-primary-hover)]"
