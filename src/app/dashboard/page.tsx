@@ -99,11 +99,11 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="mx-auto max-w-7xl space-y-5">
+    <div className="mx-auto max-w-5xl space-y-5">
       {/* 헤더 */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-xl font-bold tracking-tight">특수몰탈 프로젝트 현황</h1>
+          <h1 className="text-xl font-bold tracking-tight">프로젝트 현황</h1>
           <p className="mt-0.5 text-[13px] text-[var(--color-muted)]">
             Asana 연동 프로젝트 진행 현황 대시보드
           </p>
