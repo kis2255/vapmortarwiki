@@ -35,7 +35,7 @@ export default async function HomePage() {
     <div className="mx-auto max-w-5xl space-y-6">
       {/* 타이틀 */}
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">VAP 특수몰탈 위키</h1>
+        <h1 className="text-xl font-bold tracking-tight">VAP 특수몰탈 위키</h1>
         <p className="mt-1 text-sm text-[var(--color-muted)]">
           기술자료 데이터베이스 및 AI 기반 질의응답 시스템
         </p>
