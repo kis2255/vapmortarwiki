@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils";
 import { CategoryDot } from "@/components/ui/category-badge";
 
 const navigation = [
-  { name: "특수몰탈 프로젝트 현황", href: "/dashboard", icon: LayoutDashboard },
+  { name: "프로젝트 현황", href: "/dashboard", icon: LayoutDashboard },
   { name: "대시보드", href: "/", icon: Home },
   { name: "제품 DB", href: "/products", icon: Package },
   { name: "위키 문서", href: "/wiki", icon: FileText },
